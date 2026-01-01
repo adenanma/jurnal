@@ -2,609 +2,841 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartGarden Ultimate</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SmartGarden Ultimate Pro v2.1</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
+        /* --- 1. THEME VARIABLES --- */
         :root {
+            --primary: #059669;
+            --primary-light: #d1fae5;
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        [data-theme="dark"] {
             --primary: #10b981;
-            --primary-dark: #059669;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --dark: #111827;
-            --gray: #f3f4f6;
-            --white: #ffffff;
-            --glass: rgba(255, 255, 255, 0.95);
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --radius: 16px;
+            --primary-light: #064e3b;
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow-sm: none;
+            --shadow-md: none;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        /* --- 2. GLOBAL RESET --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        body { background-color: #f0fdf4; color: var(--dark); display: flex; height: 100vh; overflow: hidden; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background 0.3s; }
 
-        /* --- Sidebar Navigation --- */
+        /* --- 3. SIDEBAR --- */
         .sidebar {
-            width: 250px;
-            background: var(--white);
-            border-right: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            padding: 1.5rem;
-            transition: 0.3s;
-            z-index: 100;
+            width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 1.5rem; z-index: 50; transition: 0.3s;
         }
-
         .brand {
-            font-size: 1.4rem; font-weight: 700; color: var(--primary-dark);
-            margin-bottom: 2.5rem; display: flex; align-items: center; gap: 10px;
+            font-size: 1.4rem; font-weight: 800; color: var(--primary);
+            margin-bottom: 2.5rem; display: flex; align-items: center; gap: 12px;
         }
-
         .nav-link {
-            padding: 0.8rem 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 10px;
-            color: #4b5563;
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex; align-items: center; gap: 12px; font-weight: 500;
+            padding: 0.9rem 1rem; margin-bottom: 0.5rem; border-radius: var(--radius-md);
+            color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 0.95rem;
         }
+        .nav-link:hover { background: var(--bg-body); color: var(--primary); }
+        .nav-link.active { background: var(--primary-light); color: var(--primary); }
 
-        .nav-link:hover, .nav-link.active { background: #d1fae5; color: var(--primary-dark); }
-
-        /* --- Main Content --- */
-        .main-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem;
-            position: relative;
-        }
-
-        /* --- Dashboard --- */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .header h1 { font-size: 1.8rem; font-weight: 700; color: #1f2937; }
-
-        .stats-row {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;
-        }
+        /* --- 4. MAIN CONTENT --- */
+        .main-content { flex: 1; overflow-y: auto; padding: 2rem; position: relative; scroll-behavior: smooth; }
         
-        .stat-card {
-            background: var(--white); padding: 1.5rem; border-radius: var(--radius);
-            box-shadow: var(--shadow); border: 1px solid #e5e7eb;
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header-title h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }
+        .header-title p { color: var(--text-muted); font-size: 0.9rem; }
+        
+        .theme-toggle {
+            background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);
+            width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+            cursor: pointer; transition: 0.3s;
         }
-        .stat-card h3 { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem; }
-        .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--dark); }
+        .theme-toggle:hover { color: var(--text-main); border-color: var(--text-muted); }
 
-        .chart-container {
-            background: var(--white); padding: 1.5rem; border-radius: var(--radius);
-            box-shadow: var(--shadow); margin-bottom: 2rem; height: 350px;
+        /* --- 5. WEATHER WIDGET --- */
+        .weather-banner {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border-radius: var(--radius-lg); padding: 1.5rem 2rem; color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2rem; box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4);
+            position: relative; overflow: hidden;
         }
+        .weather-banner::before {
+            content: ''; position: absolute; right: -20px; top: -50px; width: 150px; height: 150px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+        }
+        .weather-info h2 { font-size: 2rem; font-weight: 800; }
+        .weather-info p { opacity: 0.9; margin-top: 5px; font-weight: 500; }
+        .weather-icon { font-size: 3rem; opacity: 0.9; }
 
-        /* --- Garden Grid --- */
-        .action-bar { margin-bottom: 1.5rem; display: flex; gap: 1rem; }
+        /* --- 6. CARDS & STATS --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        
+        .card {
+            background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border); transition: 0.3s;
+        }
+        .stat-card { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .stat-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .stat-icon { 
+            width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; 
+            font-size: 1.2rem;
+        }
+        .stat-value { font-size: 2rem; font-weight: 800; color: var(--text-main); }
+        .stat-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+
+        /* --- 7. PLANT GRID --- */
+        .action-bar { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .search-wrapper { position: relative; flex: 1; min-width: 250px; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
         .search-input {
-            flex: 1; padding: 0.8rem 1.2rem; border: 1px solid #d1d5db;
-            border-radius: 10px; outline: none;
+            width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem; border: 1px solid var(--border);
+            border-radius: var(--radius-md); outline: none; background: var(--bg-surface); color: var(--text-main);
+            transition: 0.3s;
         }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+
         .btn {
-            padding: 0.8rem 1.5rem; border: none; border-radius: 10px;
-            font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
-            transition: 0.2s;
+            padding: 0.8rem 1.5rem; border: none; border-radius: var(--radius-md);
+            font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+            transition: 0.2s; font-size: 0.9rem;
         }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); }
-        .btn-secondary { background: white; border: 1px solid #d1d5db; }
+        .btn-primary:hover { background: #047857; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .btn-secondary { background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-main); }
+        .btn-secondary:hover { background: var(--bg-body); border-color: #cbd5e1; }
+        .btn-danger { background: #fee2e2; color: #dc2626; }
+        .btn-danger:hover { background: #fecaca; }
 
-        .plant-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;
-        }
+        .plant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
 
         .plant-card {
-            background: var(--white); border-radius: var(--radius); overflow: hidden;
-            box-shadow: var(--shadow); transition: transform 0.2s; cursor: pointer;
-            position: relative;
+            background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden;
+            box-shadow: var(--shadow-sm); border: 1px solid var(--border); cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative;
         }
-        .plant-card:hover { transform: translateY(-5px); }
+        .plant-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
         
-        .plant-img { width: 100%; height: 180px; object-fit: cover; background: #e5e7eb; }
+        .plant-img-wrapper { height: 180px; position: relative; overflow: hidden; background: #e2e8f0; }
+        .plant-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .plant-card:hover .plant-img { transform: scale(1.08); }
         
-        .card-content { padding: 1.2rem; }
-        .tag {
-            font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
-            font-weight: 600; text-transform: uppercase; display: inline-block; margin-bottom: 8px;
+        .card-body { padding: 1.25rem; }
+        .badge {
+            font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            display: inline-block; margin-bottom: 8px;
         }
-        .tag-sayur { background: #d1fae5; color: #065f46; }
-        .tag-bunga { background: #fce7f3; color: #9d174d; }
         
-        .status-indicators { display: flex; gap: 10px; margin-top: 10px; }
-        .indicator {
-            flex: 1; text-align: center; padding: 6px; border-radius: 8px; font-size: 0.8rem;
-            background: #f3f4f6; color: #6b7280;
+        .status-pill {
+            margin-top: 12px; padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+            background: var(--bg-body); color: var(--text-muted); border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .indicator.alert { background: #fee2e2; color: #b91c1c; font-weight: bold; }
+        .status-pill.urgent { background: #fef2f2; color: #dc2626; border-color: #fecaca; animation: pulse 2s infinite; }
 
-        /* --- Detail Modal --- */
+        /* --- 8. MODAL --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
-            z-index: 1000; display: none; justify-content: center; align-items: center;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            z-index: 100; display: none; place-items: center; opacity: 0; transition: 0.3s;
         }
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active { display: grid; opacity: 1; }
         
-        .modal-content {
-            background: var(--white); width: 90%; max-width: 800px; height: 85vh;
-            border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        .modal-box {
+            background: var(--bg-card); width: 90%; max-width: 550px; max-height: 90vh;
+            border-radius: var(--radius-lg); overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9); transition: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 1px solid var(--border);
         }
-        
-        .modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
-        
-        /* Timeline Style */
-        .timeline { border-left: 2px solid #e5e7eb; margin-left: 10px; padding-left: 20px; }
-        .timeline-item { margin-bottom: 20px; position: relative; }
-        .timeline-item::before {
-            content: ''; position: absolute; left: -26px; top: 5px;
-            width: 10px; height: 10px; background: var(--primary); border-radius: 50%;
-        }
-        .timeline-date { font-size: 0.85rem; color: #9ca3af; margin-bottom: 4px; }
-        .timeline-content { background: #f9fafb; padding: 10px; border-radius: 8px; font-size: 0.9rem; }
+        .modal-overlay.active .modal-box { transform: scale(1); }
 
-        /* Mobile Responsive */
+        .form-group { margin-bottom: 1.2rem; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-main); }
+        .smart-suggestion { 
+            font-size: 0.8rem; color: var(--primary); margin-top: 4px; display: none; align-items: center; gap: 5px; cursor: pointer;
+        }
+        
+        /* Form Preview Image */
+        #imgPreview { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; display: none; margin-top: 10px; border: 1px solid var(--border); }
+
+        /* --- 9. MOBILE & RESPONSIVE --- */
         @media (max-width: 768px) {
-            body { flex-direction: column; height: 100vh; }
+            body { flex-direction: column; }
             .sidebar {
                 width: 100%; height: auto; flex-direction: row; justify-content: space-around;
-                padding: 10px; border-top: 1px solid #e5e7eb; border-right: none;
-                order: 2; position: fixed; bottom: 0; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1);
+                padding: 12px; border-top: 1px solid var(--border); border-right: none;
+                position: fixed; bottom: 0; order: 2; background: var(--bg-surface);
+                box-shadow: 0 -4px 10px rgba(0,0,0,0.03);
             }
             .brand { display: none; }
-            .nav-link span { display: none; } /* Hide text on mobile */
-            .nav-link i { font-size: 1.5rem; }
-            .main-content { order: 1; padding-bottom: 80px; }
+            .nav-link { flex-direction: column; gap: 4px; font-size: 0.7rem; padding: 0.5rem; margin: 0; border-radius: 8px; }
+            .nav-link i { font-size: 1.2rem; }
+            .main-content { order: 1; padding: 1.5rem; padding-bottom: 100px; }
+            .header-title h1 { font-size: 1.5rem; }
+            .weather-banner { flex-direction: column; text-align: center; gap: 1rem; }
+            .weather-banner::before { display: none; }
         }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        
+        /* Toast */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background: #1e293b; color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 2000;
+            display: flex; align-items: center; gap: 10px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="brand"><i class="fa-solid fa-leaf"></i> SG Ultimate</div>
-        <div class="nav-link active" onclick="switchTab('dashboard')">
-            <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+        <div class="brand"><i class="fa-solid fa-leaf"></i> SG PRO</div>
+        <div class="nav-link active" onclick="app.switchTab('dashboard')">
+            <i class="fa-solid fa-chart-pie"></i> <span>Beranda</span>
         </div>
-        <div class="nav-link" onclick="switchTab('garden')">
+        <div class="nav-link" onclick="app.switchTab('garden')">
             <i class="fa-solid fa-seedling"></i> <span>Kebun Saya</span>
         </div>
-        <div class="nav-link" onclick="switchTab('settings')">
-            <i class="fa-solid fa-cog"></i> <span>Pengaturan</span>
+        <div class="nav-link" onclick="app.switchTab('settings')">
+            <i class="fa-solid fa-sliders"></i> <span>Pengaturan</span>
         </div>
     </nav>
 
     <main class="main-content">
         
-        <div id="dashboard" class="view-section">
-            <div class="header">
-                <h1>Dashboard Kebun</h1>
-                <p id="dateDisplay" style="color: #6b7280;">Senin, 1 Jan 2026</p>
+        <section id="dashboard" class="view-section">
+            <div class="header-row">
+                <div class="header-title">
+                    <h1 id="greeting">Selamat Pagi, Petani!</h1>
+                    <p id="dateDisplay">Memuat...</p>
+                </div>
+                <button class="theme-toggle" onclick="app.toggleTheme()">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+
+            <div class="weather-banner">
+                <div class="weather-info">
+                    <h2 id="weatherTemp">28°C</h2>
+                    <p id="weatherDesc">Cerah Berawan • Kelembaban 70%</p>
+                    <div style="margin-top: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display: inline-block;">
+                        <i class="fa-solid fa-droplet"></i> Tips: Cuaca panas, cek kelembaban tanah sore ini.
+                    </div>
+                </div>
+                <div class="weather-icon">
+                    <i class="fa-solid fa-cloud-sun"></i>
+                </div>
             </div>
             
-            <div class="stats-row">
-                <div class="stat-card">
-                    <h3>Total Tanaman</h3>
-                    <div class="value" id="totalCount">0</div>
+            <div class="stats-grid">
+                <div class="card stat-card">
+                    <div class="stat-head">
+                        <span class="stat-label">TOTAL TANAMAN</span>
+                        <div class="stat-icon" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-tree"></i></div>
+                    </div>
+                    <div class="stat-value" id="totalCount">0</div>
                 </div>
-                <div class="stat-card">
-                    <h3>Perlu Disiram</h3>
-                    <div class="value" id="waterCount" style="color:var(--danger)">0</div>
+                <div class="card stat-card">
+                    <div class="stat-head">
+                        <span class="stat-label">BUTUH AIR</span>
+                        <div class="stat-icon" style="background: #fef2f2; color: #ef4444;"><i class="fa-solid fa-droplet-slash"></i></div>
+                    </div>
+                    <div class="stat-value" id="waterCount">0</div>
                 </div>
-                <div class="stat-card">
-                    <h3>Perlu Pupuk</h3>
-                    <div class="value" id="fertCount" style="color:var(--accent)">0</div>
+                <div class="card stat-card">
+                    <div class="stat-head">
+                        <span class="stat-label">TOTAL PANEN</span>
+                        <div class="stat-icon" style="background: #fff7ed; color: #f97316;"><i class="fa-solid fa-basket-shopping"></i></div>
+                    </div>
+                    <div class="stat-value" id="harvestCount">0 <span style="font-size:0.9rem; color:var(--text-muted)">kg</span></div>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <canvas id="plantChart"></canvas>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h3>Sebaran Ekosistem</h3>
+                    <button class="btn btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.8rem;" onclick="app.switchTab('garden')">Lihat Detail</button>
+                </div>
+                <div style="height: 250px;">
+                    <canvas id="plantChart"></canvas>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <div id="garden" class="view-section" style="display:none;">
-            <div class="header">
-                <h1>Koleksi Tanaman</h1>
+        <section id="garden" class="view-section" style="display:none;">
+            <div class="header-row">
+                <div class="header-title">
+                    <h1>Koleksi Tanaman</h1>
+                    <p>Kelola jadwal perawatan dan pertumbuhan.</p>
+                </div>
             </div>
             
             <div class="action-bar">
-                <input type="text" class="search-input" placeholder="Cari tanaman..." onkeyup="filterPlants(this.value)">
-                <button class="btn btn-primary" onclick="openAddModal()">
-                    <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Tambah</span>
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Cari tanaman..." onkeyup="app.renderGrid(this.value)">
+                </div>
+                <button class="btn btn-primary" onclick="app.openModal('formModal')">
+                    <i class="fa-solid fa-plus"></i> <span>Tambah Baru</span>
                 </button>
             </div>
 
             <div class="plant-grid" id="plantGrid">
                 </div>
-        </div>
+        </section>
 
-        <div id="settings" class="view-section" style="display:none;">
-            <div class="header"><h1>Pengaturan & Data</h1></div>
-            <div class="stat-card">
-                <h3>Backup & Restore</h3>
-                <p style="margin-bottom: 1rem; color: #666;">Simpan data kebun Anda ke file JSON agar tidak hilang.</p>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-secondary" onclick="exportData()">
-                        <i class="fa-solid fa-download"></i> Download Backup
+        <section id="settings" class="view-section" style="display:none;">
+            <div class="header-row">
+                <div class="header-title">
+                    <h1>Pengaturan</h1>
+                </div>
+            </div>
+            
+            <div class="card" style="max-width: 600px;">
+                <h3 style="margin-bottom: 1rem;">Manajemen Data</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
+                    Ekspor data Anda secara berkala dalam format JSON agar aman.
+                </p>
+                
+                <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="app.exportData()">
+                        <i class="fa-solid fa-download"></i> Backup Data
                     </button>
                     <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
                         <i class="fa-solid fa-upload"></i> Restore Data
                     </button>
-                    <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                    <input type="file" id="importFile" style="display:none" onchange="app.importData(this)">
                 </div>
-                <p style="margin-top:10px; font-size:0.8rem; color:#999;">*Gambar mungkin tidak ikut ter-backup jika ukurannya terlalu besar.</p>
+
+                <div style="padding:15px; background:var(--bg-body); border-radius:8px; font-size:0.9rem;">
+                    <i class="fa-solid fa-database" style="color:var(--primary)"></i> 
+                    Storage terpakai: <span id="storageUsed">0</span> KB
+                </div>
             </div>
-        </div>
+        </section>
 
     </main>
 
     <div class="modal-overlay" id="formModal">
-        <div class="modal-content" style="max-width: 500px; height: auto; max-height: 90vh;">
-            <div class="modal-body">
-                <h2 style="margin-bottom: 1.5rem;">Data Tanaman</h2>
+        <div class="modal-box">
+            <div style="padding: 2rem;">
+                <h2 style="margin-bottom: 0.5rem;">Tambah Tanaman</h2>
+                
                 <form id="plantForm">
-                    <input type="hidden" id="pId">
-                    <div style="margin-bottom: 1rem;">
-                        <label>Nama Tanaman</label>
-                        <input type="text" id="pName" class="search-input" style="width:100%" required>
+                    <div class="form-group">
+                        <label class="form-label">Nama Tanaman</label>
+                        <input type="text" id="pName" class="search-input" placeholder="Contoh: Cabai, Monstera" required onkeyup="app.checkPresets(this.value)">
+                        <div id="presetHint" class="smart-suggestion" onclick="app.applyPreset()">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Jadwal otomatis tersedia! Klik untuk isi.
+                        </div>
                     </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 1rem;">
-                        <div>
-                            <label>Kategori</label>
-                            <select id="pType" class="search-input" style="width:100%">
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                        <div class="form-group">
+                            <label class="form-label">Kategori</label>
+                            <select id="pType" class="search-input">
                                 <option value="Sayur">Sayur</option>
                                 <option value="Bunga">Bunga</option>
                                 <option value="Buah">Buah</option>
                                 <option value="Hias">Hias</option>
+                                <option value="Herbal">Herbal</option>
                             </select>
                         </div>
-                        <div>
-                            <label>Tgl Tanam</label>
-                            <input type="date" id="pDate" class="search-input" style="width:100%" required>
+                        <div class="form-group">
+                            <label class="form-label">Tgl Tanam</label>
+                            <input type="date" id="pDate" class="search-input" required>
                         </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <label>Jadwal Perawatan (Hari)</label>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                            <input type="number" id="pWaterFreq" placeholder="Siram tiap..." class="search-input" required>
-                            <input type="number" id="pFertFreq" placeholder="Pupuk tiap..." class="search-input" required>
+                    <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--border); margin-bottom: 1.2rem;">
+                        <label class="form-label" style="color:var(--primary); margin-bottom:10px;">Jadwal Perawatan (Hari)</label>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                            <div>
+                                <label style="font-size:0.8rem;">Siram setiap:</label>
+                                <input type="number" id="pWaterFreq" class="search-input" placeholder="1" required min="1">
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem;">Pupuk setiap:</label>
+                                <input type="number" id="pFertFreq" class="search-input" placeholder="14" required min="1">
+                            </div>
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 1rem;">
-                        <label>Foto</label>
-                        <input type="file" id="pImageInput" accept="image/*" class="search-input" style="width:100%">
+                    <div class="form-group">
+                        <label class="form-label">Foto</label>
+                        <input type="file" id="pImageInput" accept="image/*" class="search-input">
+                        <small style="color:var(--text-muted); font-size:0.8rem; margin-top:5px; display:block;">
+                            *Kosongkan jika ingin gambar otomatis berdasarkan nama tanaman.
+                        </small>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Simpan</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeFormModal()" style="width:100%; justify-content:center; margin-top:10px;">Batal</button>
+                    <div style="display:flex; gap:10px; margin-top: 2rem;">
+                        <button type="button" class="btn btn-secondary" style="flex:1;" onclick="app.closeModal('formModal')">Batal</button>
+                        <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="detailModal">
-        <div class="modal-content">
-            <div style="height: 200px; position: relative;">
-                <img id="dImage" src="" style="width:100%; height:100%; object-fit: cover;">
-                <button onclick="closeDetailModal()" style="position:absolute; top:15px; right:15px; background:white; border:none; padding:10px; border-radius:50%; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h1 id="dName">Nama Tanaman</h1>
-                    <span id="dType" class="tag tag-sayur">Tipe</span>
+        <div class="modal-box" style="max-width: 600px;">
+            <div style="position: relative;">
+                <div style="height: 250px; width: 100%;">
+                    <img id="dImage" src="" style="width:100%; height:100%; object-fit: cover;">
+                    <div style="position: absolute; inset:0; background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.8));"></div>
                 </div>
-                
-                <div style="display:flex; gap:10px; margin: 20px 0;">
-                    <button class="btn btn-primary" onclick="logAction('siram')"><i class="fa-solid fa-droplet"></i> Siram</button>
-                    <button class="btn btn-secondary" onclick="logAction('pupuk')"><i class="fa-solid fa-flask"></i> Pupuk</button>
-                    <button class="btn btn-secondary" style="border-color:var(--danger); color:var(--danger)" onclick="deleteCurrentPlant()"><i class="fa-solid fa-trash"></i> Hapus</button>
+                <button onclick="app.closeModal('detailModal')" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.9); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                    <i class="fa-solid fa-times" style="color:#0f172a"></i>
+                </button>
+                <div style="position:absolute; bottom:20px; left:20px; color:white;">
+                    <span id="dType" class="badge" style="background:white; color:var(--primary); margin-bottom:5px;">Tipe</span>
+                    <h2 id="dName" style="margin:0; font-size:1.8rem;">Nama Tanaman</h2>
+                    <p id="dAge" style="font-size:0.9rem; opacity:0.9;">Umur: 12 Hari</p>
+                </div>
+            </div>
+
+            <div style="padding: 1.5rem;">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" onclick="app.handleAction('siram')">
+                        <i class="fa-solid fa-droplet"></i> Siram
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.handleAction('pupuk')">
+                        <i class="fa-solid fa-flask"></i> Pupuk
+                    </button>
+                    <button class="btn btn-secondary" style="border-color:#f97316; color:#f97316;" onclick="app.logHarvest()">
+                        <i class="fa-solid fa-basket-shopping"></i> Panen
+                    </button>
+                    <button class="btn btn-danger" onclick="app.deletePlant()">
+                        <i class="fa-solid fa-trash"></i> Hapus
+                    </button>
                 </div>
 
-                <h3>Riwayat & Catatan</h3>
-                <div id="dTimeline" class="timeline" style="margin-top: 15px;">
+                <h4 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Riwayat Aktivitas</h4>
+                <div id="dTimeline" style="max-height: 200px; overflow-y: auto;">
                     </div>
             </div>
         </div>
     </div>
 
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-check-circle" style="color:#4ade80"></i>
+        <span id="toastMsg">Berhasil!</span>
+    </div>
+
     <script>
-        // --- 1. CONFIG & STATE ---
-        let plants = JSON.parse(localStorage.getItem('sg_data')) || [];
-        let currentDetailId = null;
-        let chartInstance = null;
-
-        // --- 2. INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            renderDashboard();
-            renderGrid();
-        });
-
-        // --- 3. CORE FUNCTIONS ---
+        /**
+         * SMARTGARDEN PRO v2.1
+         * Fixed: Smart Auto Image Logic
+         */
         
-        function saveToLocal() {
-            try {
-                localStorage.setItem('sg_data', JSON.stringify(plants));
-                renderDashboard();
-                renderGrid();
-            } catch (e) {
-                alert("Penyimpanan penuh! Hapus beberapa tanaman atau gunakan foto lebih kecil.");
-            }
-        }
+        // --- DATA PRESETS & IMAGE DB ---
+        const PLANT_KNOWLEDGE = {
+            // Format: keyword: { type, water, fert, imgId }
+            'cabai': { type: 'Sayur', water: 1, fert: 14, img: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=600&q=80' },
+            'selada': { type: 'Sayur', water: 1, fert: 10, img: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
+            'kangkung': { type: 'Sayur', water: 1, fert: 7, img: 'https://images.unsplash.com/photo-1662318183265-5bbe6578d1b0?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }
+        };
 
-        // --- 4. RENDERERS ---
+        const DEFAULT_IMG = 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80';
 
-        function renderDashboard() {
-            document.getElementById('totalCount').innerText = plants.length;
-            
-            // Hitung kebutuhan
-            const today = new Date().setHours(0,0,0,0);
-            let waterNeed = 0;
-            let fertNeed = 0;
-            const typeCounts = { Sayur: 0, Bunga: 0, Buah: 0, Hias: 0 };
+        const app = {
+            data: [],
+            currentId: null,
+            chart: null,
+            activePreset: null,
 
-            plants.forEach(p => {
-                // Statistik Tipe
-                typeCounts[p.type] = (typeCounts[p.type] || 0) + 1;
-
-                // Cek Siram
-                const lastWater = new Date(p.lastWater).setHours(0,0,0,0);
-                const nextWater = lastWater + (p.waterFreq * 86400000);
-                if (today >= nextWater) waterNeed++;
-
-                // Cek Pupuk
-                const lastFert = new Date(p.lastFert || p.date).setHours(0,0,0,0);
-                const nextFert = lastFert + (p.fertFreq * 86400000);
-                if (today >= nextFert) fertNeed++;
-            });
-
-            document.getElementById('waterCount').innerText = waterNeed;
-            document.getElementById('fertCount').innerText = fertNeed;
-
-            // Render Chart
-            const ctx = document.getElementById('plantChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(typeCounts),
-                    datasets: [{
-                        data: Object.values(typeCounts),
-                        backgroundColor: ['#10b981', '#f472b6', '#ef4444', '#f59e0b'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right' } }
-                }
-            });
-        }
-
-        function renderGrid(filterText = '') {
-            const grid = document.getElementById('plantGrid');
-            grid.innerHTML = '';
-            
-            const filtered = plants.filter(p => p.name.toLowerCase().includes(filterText.toLowerCase()));
-
-            if(filtered.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#999;">Tidak ada tanaman ditemukan.</div>';
-                return;
-            }
-
-            filtered.forEach(p => {
-                // Hitung Status
-                const today = new Date().setHours(0,0,0,0);
-                const lastWater = new Date(p.lastWater).setHours(0,0,0,0);
-                const nextWater = lastWater + (p.waterFreq * 86400000);
+            init() {
+                this.data = JSON.parse(localStorage.getItem('sg_pro_data')) || [];
                 
-                const isThirsty = today >= nextWater;
-                const waterClass = isThirsty ? 'alert' : '';
-                const waterText = isThirsty ? 'Butuh Air!' : 'Aman';
+                // Set Theme
+                const theme = localStorage.getItem('sg_theme') || 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+                
+                // Set Date & Greeting
+                const now = new Date();
+                const hours = now.getHours();
+                let greet = hours < 11 ? "Selamat Pagi" : hours < 15 ? "Selamat Siang" : hours < 18 ? "Selamat Sore" : "Selamat Malam";
+                document.getElementById('greeting').innerText = `${greet}, Admin`;
+                document.getElementById('dateDisplay').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Calculate Storage
+                const str = JSON.stringify(this.data);
+                document.getElementById('storageUsed').innerText = (str.length / 1024).toFixed(2);
 
-                const img = p.image || 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=500&q=60';
+                this.updateUI();
+            },
 
-                grid.innerHTML += `
-                    <div class="plant-card" onclick="openDetail(${p.id})">
-                        <img src="${img}" class="plant-img">
-                        <div class="card-content">
-                            <span class="tag tag-${p.type.toLowerCase() === 'sayur' ? 'sayur' : 'bunga'}">${p.type}</span>
-                            <h3 style="font-size:1.1rem; margin-bottom:5px;">${p.name}</h3>
-                            <div class="status-indicators">
-                                <div class="indicator ${waterClass}"><i class="fa-solid fa-droplet"></i> ${waterText}</div>
-                                <div class="indicator"><i class="fa-solid fa-calendar"></i> ${p.logs.length} Log</div>
+            save() {
+                localStorage.setItem('sg_pro_data', JSON.stringify(this.data));
+                this.updateUI();
+            },
+
+            updateUI() {
+                this.renderDashboard();
+                this.renderGrid();
+            },
+
+            // --- DASHBOARD LOGIC ---
+            renderDashboard() {
+                document.getElementById('totalCount').innerText = this.data.length;
+                
+                const today = new Date().setHours(0,0,0,0);
+                let waterNeeded = 0;
+                let totalHarvest = 0;
+                const typeCounts = {};
+
+                this.data.forEach(p => {
+                    typeCounts[p.type] = (typeCounts[p.type] || 0) + 1;
+                    const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
+                    if(today >= nextWater) waterNeeded++;
+                    p.logs.forEach(l => {
+                        if(l.type === 'harvest' && l.amount) totalHarvest += parseFloat(l.amount);
+                    });
+                });
+
+                document.getElementById('waterCount').innerText = waterNeeded;
+                document.getElementById('harvestCount').innerHTML = `${totalHarvest} <span style="font-size:0.9rem; color:var(--text-muted)">kg</span>`;
+
+                // Chart
+                const ctx = document.getElementById('plantChart').getContext('2d');
+                if(this.chart) this.chart.destroy();
+                
+                const labels = Object.keys(typeCounts);
+                const values = Object.values(typeCounts);
+                const colors = ['#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
+
+                this.chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels.length ? labels : ['Kosong'],
+                        datasets: [{
+                            data: values.length ? values : [1],
+                            backgroundColor: labels.length ? colors : ['#e2e8f0'],
+                            borderWidth: 0,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } }
+                        }
+                    }
+                });
+            },
+
+            // --- GRID LOGIC ---
+            renderGrid(filter = '') {
+                const container = document.getElementById('plantGrid');
+                container.innerHTML = '';
+                
+                const filtered = this.data.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+                
+                if (filtered.length === 0) {
+                    container.innerHTML = `
+                        <div style="grid-column:1/-1; text-align:center; padding:3rem; opacity:0.5;">
+                            <i class="fa-solid fa-leaf" style="font-size:3rem; margin-bottom:1rem;"></i>
+                            <p>Data tidak ditemukan.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                filtered.forEach(p => {
+                    const today = new Date().setHours(0,0,0,0);
+                    const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
+                    const diffDays = Math.ceil((nextWater - today) / (86400000));
+                    const isUrgent = diffDays <= 0;
+
+                    // Fallback image logic if data corrupted
+                    const img = p.image || DEFAULT_IMG;
+                    
+                    const html = `
+                        <div class="plant-card" onclick="app.openDetail(${p.id})">
+                            <div class="plant-img-wrapper">
+                                <img src="${img}" class="plant-img" loading="lazy">
+                            </div>
+                            <div class="card-body">
+                                <span class="badge" style="background:var(--primary-light); color:var(--primary)">${p.type}</span>
+                                <h3 style="font-size:1.1rem; margin-bottom:5px; color:var(--text-main)">${p.name}</h3>
+                                <div class="status-pill ${isUrgent ? 'urgent' : ''}">
+                                    <i class="fa-solid ${isUrgent ? 'fa-triangle-exclamation' : 'fa-droplet'}"></i>
+                                    ${isUrgent ? 'Siram Sekarang!' : `Siram: ${diffDays} hari lagi`}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
-            });
-        }
+                    `;
+                    container.innerHTML += html;
+                });
+            },
 
-        function renderTimeline(plant) {
-            const container = document.getElementById('dTimeline');
-            container.innerHTML = '';
-            
-            // Sort log terbaru di atas
-            const sortedLogs = [...plant.logs].sort((a,b) => new Date(b.date) - new Date(a.date));
+            // --- DETAIL & ACTIONS ---
+            openDetail(id) {
+                const p = this.data.find(x => x.id === id);
+                if(!p) return;
+                this.currentId = id;
 
-            sortedLogs.forEach(log => {
-                let icon = 'circle';
-                if(log.type === 'siram') icon = 'droplet';
-                if(log.type === 'pupuk') icon = 'flask';
-                if(log.type === 'tanam') icon = 'seedling';
+                document.getElementById('dName').innerText = p.name;
+                document.getElementById('dType').innerText = p.type;
+                document.getElementById('dImage').src = p.image || DEFAULT_IMG;
+                
+                const planted = new Date(p.date);
+                const age = Math.floor((new Date() - planted) / (86400000));
+                document.getElementById('dAge').innerText = `Ditanam: ${p.date} (${age} hari yang lalu)`;
 
-                container.innerHTML += `
-                    <div class="timeline-item">
-                        <div class="timeline-date">${new Date(log.date).toLocaleString('id-ID')}</div>
-                        <div class="timeline-content">
-                            <strong><i class="fa-solid fa-${icon}"></i> ${log.action}</strong>
+                this.renderTimeline(p);
+                this.openModal('detailModal');
+            },
+
+            renderTimeline(p) {
+                const tl = document.getElementById('dTimeline');
+                tl.innerHTML = '';
+                const sortedLogs = [...p.logs].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                sortedLogs.forEach(l => {
+                    const d = new Date(l.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                    const icon = l.type === 'siram' ? 'fa-droplet' : l.type === 'pupuk' ? 'fa-flask' : l.type === 'harvest' ? 'fa-basket-shopping' : 'fa-seedling';
+                    const color = l.type === 'harvest' ? '#f97316' : 'var(--primary)';
+                    
+                    tl.innerHTML += `
+                        <div style="display:flex; gap:15px; margin-bottom:15px; align-items:start;">
+                            <div style="min-width:50px; font-size:0.8rem; color:var(--text-muted); padding-top:3px;">${d}</div>
+                            <div style="flex:1;">
+                                <div style="font-weight:600; font-size:0.95rem; color:${color}">
+                                    <i class="fa-solid ${icon}" style="margin-right:5px;"></i> ${l.action}
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
-        }
+                    `;
+                });
+            },
 
-        // --- 5. LOGIC & ACTIONS ---
+            handleAction(type) {
+                const idx = this.data.findIndex(p => p.id === this.currentId);
+                const now = new Date();
+                
+                if(type === 'siram') this.data[idx].lastWater = now.toISOString();
+                if(type === 'pupuk') this.data[idx].lastFert = now.toISOString();
 
-        function openDetail(id) {
-            const plant = plants.find(p => p.id === id);
-            if(!plant) return;
+                const actionText = type === 'siram' ? 'Disiram' : 'Diberi Pupuk';
+                this.data[idx].logs.push({ date: now.toISOString(), type, action: actionText });
+                
+                this.save();
+                this.renderTimeline(this.data[idx]);
+                this.showToast(`${actionText} berhasil!`);
+            },
+
+            logHarvest() {
+                const amount = prompt("Berapa kg hasil panen?");
+                if(amount) {
+                    const idx = this.data.findIndex(p => p.id === this.currentId);
+                    this.data[idx].logs.push({ 
+                        date: new Date().toISOString(), 
+                        type: 'harvest', 
+                        action: `Panen ${amount}kg`,
+                        amount: parseFloat(amount)
+                    });
+                    this.save();
+                    this.renderTimeline(this.data[idx]);
+                    this.showToast("Panen tercatat!");
+                }
+            },
+
+            deletePlant() {
+                if(confirm("Hapus permanen?")) {
+                    this.data = this.data.filter(p => p.id !== this.currentId);
+                    this.save();
+                    this.closeModal('detailModal');
+                    this.showToast("Tanaman dihapus");
+                }
+            },
+
+            // --- SMART AUTO IMAGE LOGIC (NEW) ---
+            checkPresets(val) {
+                const hint = document.getElementById('presetHint');
+                const lower = val.toLowerCase();
+                
+                // Find matching key in Knowledge Base
+                const matchKey = Object.keys(PLANT_KNOWLEDGE).find(k => lower.includes(k));
+                
+                if(matchKey) {
+                    this.activePreset = PLANT_KNOWLEDGE[matchKey];
+                    hint.style.display = 'flex';
+                } else {
+                    hint.style.display = 'none';
+                    this.activePreset = null;
+                }
+            },
+
+            applyPreset() {
+                if(this.activePreset) {
+                    document.getElementById('pType').value = this.activePreset.type;
+                    document.getElementById('pWaterFreq').value = this.activePreset.water;
+                    document.getElementById('pFertFreq').value = this.activePreset.fert;
+                    document.getElementById('presetHint').style.display = 'none';
+                    this.showToast("Jadwal otomatis terisi!");
+                }
+            },
+
+            getAutoImage(name) {
+                const lower = name.toLowerCase();
+                const matchKey = Object.keys(PLANT_KNOWLEDGE).find(k => lower.includes(k));
+                if(matchKey) return PLANT_KNOWLEDGE[matchKey].img;
+                return DEFAULT_IMG;
+            },
+
+            // --- UTILITIES ---
+            switchTab(id) {
+                document.querySelectorAll('.view-section').forEach(e => e.style.display = 'none');
+                document.getElementById(id).style.display = 'block';
+                document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
+                
+                const navIdx = id === 'dashboard' ? 0 : id === 'garden' ? 1 : 2;
+                document.querySelectorAll('.nav-link')[navIdx].classList.add('active');
+            },
+
+            openModal(id) { document.getElementById(id).classList.add('active'); },
+            closeModal(id) { document.getElementById(id).classList.remove('active'); },
             
-            currentDetailId = id;
-            document.getElementById('dName').innerText = plant.name;
-            document.getElementById('dType').innerText = plant.type;
-            document.getElementById('dImage').src = plant.image || 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=500&q=60';
-            
-            renderTimeline(plant);
-            document.getElementById('detailModal').classList.add('active');
-        }
+            toggleTheme() {
+                const current = document.documentElement.getAttribute('data-theme');
+                const next = current === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                localStorage.setItem('sg_theme', next);
+            },
 
-        function logAction(type) {
-            const plantIndex = plants.findIndex(p => p.id === currentDetailId);
-            if(plantIndex === -1) return;
+            showToast(msg) {
+                const t = document.getElementById('toast');
+                document.getElementById('toastMsg').innerText = msg;
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 3000);
+            },
 
-            const now = new Date();
-            let actionText = '';
+            async compressImage(file) {
+                return new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = e => {
+                        const img = new Image();
+                        img.src = e.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const maxW = 500;
+                            const scale = maxW / img.width;
+                            canvas.width = maxW;
+                            canvas.height = img.height * scale;
+                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                            resolve(canvas.toDataURL('image/jpeg', 0.7));
+                        }
+                    }
+                });
+            },
 
-            if(type === 'siram') {
-                plants[plantIndex].lastWater = now.toISOString();
-                actionText = 'Disiram';
-            } else if (type === 'pupuk') {
-                plants[plantIndex].lastFert = now.toISOString();
-                actionText = 'Diberi Pupuk';
+            exportData() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = `smartgarden_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+            },
+
+            importData(input) {
+                const file = input.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        this.data = JSON.parse(e.target.result);
+                        this.save();
+                        this.showToast("Restore berhasil!");
+                    } catch(err) { alert("File rusak!"); }
+                };
+                reader.readAsText(file);
             }
+        };
 
-            plants[plantIndex].logs.push({
-                date: now.toISOString(),
-                type: type,
-                action: actionText
-            });
-
-            saveToLocal();
-            renderTimeline(plants[plantIndex]); // Update tampilan timeline
-        }
-
-        function deleteCurrentPlant() {
-            if(confirm('Yakin hapus tanaman ini beserta sejarahnya?')) {
-                plants = plants.filter(p => p.id !== currentDetailId);
-                saveToLocal();
-                closeDetailModal();
-            }
-        }
-
-        // --- 6. FORM HANDLING & IMAGE COMPRESSION ---
-
+        // --- FORM SUBMIT HANDLER ---
         document.getElementById('plantForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('pName').value;
-            const type = document.getElementById('pType').value;
-            const date = document.getElementById('pDate').value;
-            const waterFreq = parseInt(document.getElementById('pWaterFreq').value);
-            const fertFreq = parseInt(document.getElementById('pFertFreq').value);
-            const imgInput = document.getElementById('pImageInput');
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerText = "Menyimpan...";
+            btn.disabled = true;
 
-            let imageBase64 = null;
-            if (imgInput.files[0]) {
-                imageBase64 = await compressImage(imgInput.files[0]);
+            try {
+                const name = document.getElementById('pName').value;
+                const file = document.getElementById('pImageInput').files[0];
+                
+                let imgBase64 = null;
+                
+                // LOGIC GAMBAR OTOMATIS DI SINI:
+                if(file) {
+                    // Jika user upload file, pakai file itu
+                    imgBase64 = await app.compressImage(file);
+                } else {
+                    // Jika tidak upload, cari gambar berdasarkan nama
+                    imgBase64 = app.getAutoImage(name);
+                }
+
+                const newPlant = {
+                    id: Date.now(),
+                    name: name,
+                    type: document.getElementById('pType').value,
+                    date: document.getElementById('pDate').value,
+                    waterFreq: parseInt(document.getElementById('pWaterFreq').value),
+                    fertFreq: parseInt(document.getElementById('pFertFreq').value),
+                    lastWater: document.getElementById('pDate').value,
+                    lastFert: document.getElementById('pDate').value,
+                    image: imgBase64,
+                    logs: [{ date: new Date().toISOString(), type: 'init', action: 'Ditanam' }]
+                };
+
+                app.data.unshift(newPlant);
+                app.save();
+                app.closeModal('formModal');
+                e.target.reset();
+                app.showToast("Tanaman ditambahkan!");
+                app.switchTab('garden');
+            } catch (err) {
+                console.error(err);
+                alert("Gagal menyimpan.");
+            } finally {
+                btn.innerText = "Simpan";
+                btn.disabled = false;
             }
-
-            const newPlant = {
-                id: Date.now(),
-                name, type, date,
-                waterFreq, fertFreq,
-                lastWater: date,
-                lastFert: date,
-                image: imageBase64,
-                logs: [{ date: new Date().toISOString(), type: 'tanam', action: 'Ditanam pertama kali' }]
-            };
-
-            plants.unshift(newPlant);
-            saveToLocal();
-            closeFormModal();
-            e.target.reset();
-            switchTab('garden');
         });
 
-        // Image Compressor (Penting agar LocalStorage tidak meledak)
-        function compressImage(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const maxWidth = 600; // Kecilkan ukuran
-                        const scaleSize = maxWidth / img.width;
-                        canvas.width = maxWidth;
-                        canvas.height = img.height * scaleSize;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.7)); // Kompres ke JPEG kualitas 70%
-                    }
-                }
-            });
-        }
-
-        // --- 7. UTILS & NAVIGATION ---
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
-            document.getElementById(tabId).style.display = 'block';
-            
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-            // Highlight logic sederhana
-            const links = document.querySelectorAll('.nav-link');
-            if(tabId === 'dashboard') links[0].classList.add('active');
-            if(tabId === 'garden') links[1].classList.add('active');
-            if(tabId === 'settings') links[2].classList.add('active');
-        }
-
-        function openAddModal() { document.getElementById('formModal').classList.add('active'); }
-        function closeFormModal() { document.getElementById('formModal').classList.remove('active'); }
-        function closeDetailModal() { document.getElementById('detailModal').classList.remove('active'); }
-
-        function filterPlants(val) { renderGrid(val); }
-
-        function exportData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(plants));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "backup_kebun.json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    plants = JSON.parse(e.target.result);
-                    saveToLocal();
-                    alert("Data berhasil dipulihkan!");
-                } catch(err) {
-                    alert("File backup tidak valid.");
-                }
-            };
-            reader.readAsText(file);
-        }
+        // START APP
+        document.addEventListener('DOMContentLoaded', () => app.init());
 
     </script>
 </body>
