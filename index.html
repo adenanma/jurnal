@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartGarden Ultimate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --dark: #111827;
+            --gray: #f3f4f6;
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.95);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { background-color: #f0fdf4; color: var(--dark); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 250px;
+            background: var(--white);
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            transition: 0.3s;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 1.4rem; font-weight: 700; color: var(--primary-dark);
+            margin-bottom: 2.5rem; display: flex; align-items: center; gap: 10px;
+        }
+
+        .nav-link {
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            color: #4b5563;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex; align-items: center; gap: 12px; font-weight: 500;
+        }
+
+        .nav-link:hover, .nav-link.active { background: #d1fae5; color: var(--primary-dark); }
+
+        /* --- Main Content --- */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* --- Dashboard --- */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header h1 { font-size: 1.8rem; font-weight: 700; color: #1f2937; }
+
+        .stats-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--white); padding: 1.5rem; border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1px solid #e5e7eb;
+        }
+        .stat-card h3 { font-size: 0.9rem; color: #6b7280; margin-bottom: 0.5rem; }
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--dark); }
+
+        .chart-container {
+            background: var(--white); padding: 1.5rem; border-radius: var(--radius);
+            box-shadow: var(--shadow); margin-bottom: 2rem; height: 350px;
+        }
+
+        /* --- Garden Grid --- */
+        .action-bar { margin-bottom: 1.5rem; display: flex; gap: 1rem; }
+        .search-input {
+            flex: 1; padding: 0.8rem 1.2rem; border: 1px solid #d1d5db;
+            border-radius: 10px; outline: none;
+        }
+        .btn {
+            padding: 0.8rem 1.5rem; border: none; border-radius: 10px;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: white; border: 1px solid #d1d5db; }
+
+        .plant-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;
+        }
+
+        .plant-card {
+            background: var(--white); border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow); transition: transform 0.2s; cursor: pointer;
+            position: relative;
+        }
+        .plant-card:hover { transform: translateY(-5px); }
+        
+        .plant-img { width: 100%; height: 180px; object-fit: cover; background: #e5e7eb; }
+        
+        .card-content { padding: 1.2rem; }
+        .tag {
+            font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
+            font-weight: 600; text-transform: uppercase; display: inline-block; margin-bottom: 8px;
+        }
+        .tag-sayur { background: #d1fae5; color: #065f46; }
+        .tag-bunga { background: #fce7f3; color: #9d174d; }
+        
+        .status-indicators { display: flex; gap: 10px; margin-top: 10px; }
+        .indicator {
+            flex: 1; text-align: center; padding: 6px; border-radius: 8px; font-size: 0.8rem;
+            background: #f3f4f6; color: #6b7280;
+        }
+        .indicator.alert { background: #fee2e2; color: #b91c1c; font-weight: bold; }
+
+        /* --- Detail Modal --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .modal-content {
+            background: var(--white); width: 90%; max-width: 800px; height: 85vh;
+            border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .modal-body { padding: 2rem; overflow-y: auto; flex: 1; }
+        
+        /* Timeline Style */
+        .timeline { border-left: 2px solid #e5e7eb; margin-left: 10px; padding-left: 20px; }
+        .timeline-item { margin-bottom: 20px; position: relative; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -26px; top: 5px;
+            width: 10px; height: 10px; background: var(--primary); border-radius: 50%;
+        }
+        .timeline-date { font-size: 0.85rem; color: #9ca3af; margin-bottom: 4px; }
+        .timeline-content { background: #f9fafb; padding: 10px; border-radius: 8px; font-size: 0.9rem; }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: 100vh; }
+            .sidebar {
+                width: 100%; height: auto; flex-direction: row; justify-content: space-around;
+                padding: 10px; border-top: 1px solid #e5e7eb; border-right: none;
+                order: 2; position: fixed; bottom: 0; box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.1);
+            }
+            .brand { display: none; }
+            .nav-link span { display: none; } /* Hide text on mobile */
+            .nav-link i { font-size: 1.5rem; }
+            .main-content { order: 1; padding-bottom: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="brand"><i class="fa-solid fa-leaf"></i> SG Ultimate</div>
+        <div class="nav-link active" onclick="switchTab('dashboard')">
+            <i class="fa-solid fa-chart-pie"></i> <span>Dashboard</span>
+        </div>
+        <div class="nav-link" onclick="switchTab('garden')">
+            <i class="fa-solid fa-seedling"></i> <span>Kebun Saya</span>
+        </div>
+        <div class="nav-link" onclick="switchTab('settings')">
+            <i class="fa-solid fa-cog"></i> <span>Pengaturan</span>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        
+        <div id="dashboard" class="view-section">
+            <div class="header">
+                <h1>Dashboard Kebun</h1>
+                <p id="dateDisplay" style="color: #6b7280;">Senin, 1 Jan 2026</p>
+            </div>
+            
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3>Total Tanaman</h3>
+                    <div class="value" id="totalCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Perlu Disiram</h3>
+                    <div class="value" id="waterCount" style="color:var(--danger)">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Perlu Pupuk</h3>
+                    <div class="value" id="fertCount" style="color:var(--accent)">0</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="plantChart"></canvas>
+            </div>
+        </div>
+
+        <div id="garden" class="view-section" style="display:none;">
+            <div class="header">
+                <h1>Koleksi Tanaman</h1>
+            </div>
+            
+            <div class="action-bar">
+                <input type="text" class="search-input" placeholder="Cari tanaman..." onkeyup="filterPlants(this.value)">
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <i class="fa-solid fa-plus"></i> <span class="hide-mobile">Tambah</span>
+                </button>
+            </div>
+
+            <div class="plant-grid" id="plantGrid">
+                </div>
+        </div>
+
+        <div id="settings" class="view-section" style="display:none;">
+            <div class="header"><h1>Pengaturan & Data</h1></div>
+            <div class="stat-card">
+                <h3>Backup & Restore</h3>
+                <p style="margin-bottom: 1rem; color: #666;">Simpan data kebun Anda ke file JSON agar tidak hilang.</p>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="exportData()">
+                        <i class="fa-solid fa-download"></i> Download Backup
+                    </button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
+                        <i class="fa-solid fa-upload"></i> Restore Data
+                    </button>
+                    <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                </div>
+                <p style="margin-top:10px; font-size:0.8rem; color:#999;">*Gambar mungkin tidak ikut ter-backup jika ukurannya terlalu besar.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal-content" style="max-width: 500px; height: auto; max-height: 90vh;">
+            <div class="modal-body">
+                <h2 style="margin-bottom: 1.5rem;">Data Tanaman</h2>
+                <form id="plantForm">
+                    <input type="hidden" id="pId">
+                    <div style="margin-bottom: 1rem;">
+                        <label>Nama Tanaman</label>
+                        <input type="text" id="pName" class="search-input" style="width:100%" required>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 1rem;">
+                        <div>
+                            <label>Kategori</label>
+                            <select id="pType" class="search-input" style="width:100%">
+                                <option value="Sayur">Sayur</option>
+                                <option value="Bunga">Bunga</option>
+                                <option value="Buah">Buah</option>
+                                <option value="Hias">Hias</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Tgl Tanam</label>
+                            <input type="date" id="pDate" class="search-input" style="width:100%" required>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label>Jadwal Perawatan (Hari)</label>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <input type="number" id="pWaterFreq" placeholder="Siram tiap..." class="search-input" required>
+                            <input type="number" id="pFertFreq" placeholder="Pupuk tiap..." class="search-input" required>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label>Foto</label>
+                        <input type="file" id="pImageInput" accept="image/*" class="search-input" style="width:100%">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Simpan</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeFormModal()" style="width:100%; justify-content:center; margin-top:10px;">Batal</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-content">
+            <div style="height: 200px; position: relative;">
+                <img id="dImage" src="" style="width:100%; height:100%; object-fit: cover;">
+                <button onclick="closeDetailModal()" style="position:absolute; top:15px; right:15px; background:white; border:none; padding:10px; border-radius:50%; cursor:pointer;"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h1 id="dName">Nama Tanaman</h1>
+                    <span id="dType" class="tag tag-sayur">Tipe</span>
+                </div>
+                
+                <div style="display:flex; gap:10px; margin: 20px 0;">
+                    <button class="btn btn-primary" onclick="logAction('siram')"><i class="fa-solid fa-droplet"></i> Siram</button>
+                    <button class="btn btn-secondary" onclick="logAction('pupuk')"><i class="fa-solid fa-flask"></i> Pupuk</button>
+                    <button class="btn btn-secondary" style="border-color:var(--danger); color:var(--danger)" onclick="deleteCurrentPlant()"><i class="fa-solid fa-trash"></i> Hapus</button>
+                </div>
+
+                <h3>Riwayat & Catatan</h3>
+                <div id="dTimeline" class="timeline" style="margin-top: 15px;">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIG & STATE ---
+        let plants = JSON.parse(localStorage.getItem('sg_data')) || [];
+        let currentDetailId = null;
+        let chartInstance = null;
+
+        // --- 2. INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('dateDisplay').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            renderDashboard();
+            renderGrid();
+        });
+
+        // --- 3. CORE FUNCTIONS ---
+        
+        function saveToLocal() {
+            try {
+                localStorage.setItem('sg_data', JSON.stringify(plants));
+                renderDashboard();
+                renderGrid();
+            } catch (e) {
+                alert("Penyimpanan penuh! Hapus beberapa tanaman atau gunakan foto lebih kecil.");
+            }
+        }
+
+        // --- 4. RENDERERS ---
+
+        function renderDashboard() {
+            document.getElementById('totalCount').innerText = plants.length;
+            
+            // Hitung kebutuhan
+            const today = new Date().setHours(0,0,0,0);
+            let waterNeed = 0;
+            let fertNeed = 0;
+            const typeCounts = { Sayur: 0, Bunga: 0, Buah: 0, Hias: 0 };
+
+            plants.forEach(p => {
+                // Statistik Tipe
+                typeCounts[p.type] = (typeCounts[p.type] || 0) + 1;
+
+                // Cek Siram
+                const lastWater = new Date(p.lastWater).setHours(0,0,0,0);
+                const nextWater = lastWater + (p.waterFreq * 86400000);
+                if (today >= nextWater) waterNeed++;
+
+                // Cek Pupuk
+                const lastFert = new Date(p.lastFert || p.date).setHours(0,0,0,0);
+                const nextFert = lastFert + (p.fertFreq * 86400000);
+                if (today >= nextFert) fertNeed++;
+            });
+
+            document.getElementById('waterCount').innerText = waterNeed;
+            document.getElementById('fertCount').innerText = fertNeed;
+
+            // Render Chart
+            const ctx = document.getElementById('plantChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{
+                        data: Object.values(typeCounts),
+                        backgroundColor: ['#10b981', '#f472b6', '#ef4444', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right' } }
+                }
+            });
+        }
+
+        function renderGrid(filterText = '') {
+            const grid = document.getElementById('plantGrid');
+            grid.innerHTML = '';
+            
+            const filtered = plants.filter(p => p.name.toLowerCase().includes(filterText.toLowerCase()));
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:2rem; color:#999;">Tidak ada tanaman ditemukan.</div>';
+                return;
+            }
+
+            filtered.forEach(p => {
+                // Hitung Status
+                const today = new Date().setHours(0,0,0,0);
+                const lastWater = new Date(p.lastWater).setHours(0,0,0,0);
+                const nextWater = lastWater + (p.waterFreq * 86400000);
+                
+                const isThirsty = today >= nextWater;
+                const waterClass = isThirsty ? 'alert' : '';
+                const waterText = isThirsty ? 'Butuh Air!' : 'Aman';
+
+                const img = p.image || 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=500&q=60';
+
+                grid.innerHTML += `
+                    <div class="plant-card" onclick="openDetail(${p.id})">
+                        <img src="${img}" class="plant-img">
+                        <div class="card-content">
+                            <span class="tag tag-${p.type.toLowerCase() === 'sayur' ? 'sayur' : 'bunga'}">${p.type}</span>
+                            <h3 style="font-size:1.1rem; margin-bottom:5px;">${p.name}</h3>
+                            <div class="status-indicators">
+                                <div class="indicator ${waterClass}"><i class="fa-solid fa-droplet"></i> ${waterText}</div>
+                                <div class="indicator"><i class="fa-solid fa-calendar"></i> ${p.logs.length} Log</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderTimeline(plant) {
+            const container = document.getElementById('dTimeline');
+            container.innerHTML = '';
+            
+            // Sort log terbaru di atas
+            const sortedLogs = [...plant.logs].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            sortedLogs.forEach(log => {
+                let icon = 'circle';
+                if(log.type === 'siram') icon = 'droplet';
+                if(log.type === 'pupuk') icon = 'flask';
+                if(log.type === 'tanam') icon = 'seedling';
+
+                container.innerHTML += `
+                    <div class="timeline-item">
+                        <div class="timeline-date">${new Date(log.date).toLocaleString('id-ID')}</div>
+                        <div class="timeline-content">
+                            <strong><i class="fa-solid fa-${icon}"></i> ${log.action}</strong>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 5. LOGIC & ACTIONS ---
+
+        function openDetail(id) {
+            const plant = plants.find(p => p.id === id);
+            if(!plant) return;
+            
+            currentDetailId = id;
+            document.getElementById('dName').innerText = plant.name;
+            document.getElementById('dType').innerText = plant.type;
+            document.getElementById('dImage').src = plant.image || 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=500&q=60';
+            
+            renderTimeline(plant);
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function logAction(type) {
+            const plantIndex = plants.findIndex(p => p.id === currentDetailId);
+            if(plantIndex === -1) return;
+
+            const now = new Date();
+            let actionText = '';
+
+            if(type === 'siram') {
+                plants[plantIndex].lastWater = now.toISOString();
+                actionText = 'Disiram';
+            } else if (type === 'pupuk') {
+                plants[plantIndex].lastFert = now.toISOString();
+                actionText = 'Diberi Pupuk';
+            }
+
+            plants[plantIndex].logs.push({
+                date: now.toISOString(),
+                type: type,
+                action: actionText
+            });
+
+            saveToLocal();
+            renderTimeline(plants[plantIndex]); // Update tampilan timeline
+        }
+
+        function deleteCurrentPlant() {
+            if(confirm('Yakin hapus tanaman ini beserta sejarahnya?')) {
+                plants = plants.filter(p => p.id !== currentDetailId);
+                saveToLocal();
+                closeDetailModal();
+            }
+        }
+
+        // --- 6. FORM HANDLING & IMAGE COMPRESSION ---
+
+        document.getElementById('plantForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('pName').value;
+            const type = document.getElementById('pType').value;
+            const date = document.getElementById('pDate').value;
+            const waterFreq = parseInt(document.getElementById('pWaterFreq').value);
+            const fertFreq = parseInt(document.getElementById('pFertFreq').value);
+            const imgInput = document.getElementById('pImageInput');
+
+            let imageBase64 = null;
+            if (imgInput.files[0]) {
+                imageBase64 = await compressImage(imgInput.files[0]);
+            }
+
+            const newPlant = {
+                id: Date.now(),
+                name, type, date,
+                waterFreq, fertFreq,
+                lastWater: date,
+                lastFert: date,
+                image: imageBase64,
+                logs: [{ date: new Date().toISOString(), type: 'tanam', action: 'Ditanam pertama kali' }]
+            };
+
+            plants.unshift(newPlant);
+            saveToLocal();
+            closeFormModal();
+            e.target.reset();
+            switchTab('garden');
+        });
+
+        // Image Compressor (Penting agar LocalStorage tidak meledak)
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxWidth = 600; // Kecilkan ukuran
+                        const scaleSize = maxWidth / img.width;
+                        canvas.width = maxWidth;
+                        canvas.height = img.height * scaleSize;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7)); // Kompres ke JPEG kualitas 70%
+                    }
+                }
+            });
+        }
+
+        // --- 7. UTILS & NAVIGATION ---
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.view-section').forEach(el => el.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+            
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            // Highlight logic sederhana
+            const links = document.querySelectorAll('.nav-link');
+            if(tabId === 'dashboard') links[0].classList.add('active');
+            if(tabId === 'garden') links[1].classList.add('active');
+            if(tabId === 'settings') links[2].classList.add('active');
+        }
+
+        function openAddModal() { document.getElementById('formModal').classList.add('active'); }
+        function closeFormModal() { document.getElementById('formModal').classList.remove('active'); }
+        function closeDetailModal() { document.getElementById('detailModal').classList.remove('active'); }
+
+        function filterPlants(val) { renderGrid(val); }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(plants));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "backup_kebun.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    plants = JSON.parse(e.target.result);
+                    saveToLocal();
+                    alert("Data berhasil dipulihkan!");
+                } catch(err) {
+                    alert("File backup tidak valid.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+    </script>
+</body>
+</html>
