@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartGarden Ultimate Pro v2.1</title>
+    <title>SmartGarden MADNN</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -92,6 +92,15 @@
         .weather-info h2 { font-size: 2rem; font-weight: 800; }
         .weather-info p { opacity: 0.9; margin-top: 5px; font-weight: 500; }
         .weather-icon { font-size: 3rem; opacity: 0.9; }
+        
+        /* Rain Delay Button */
+        .rain-delay-btn {
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+            color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer;
+            font-size: 0.85rem; margin-top: 10px; display: none; align-items: center; gap: 8px;
+            transition: 0.3s;
+        }
+        .rain-delay-btn:hover { background: rgba(255,255,255,0.3); }
 
         /* --- 6. CARDS & STATS --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
@@ -120,6 +129,13 @@
             transition: 0.3s;
         }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        
+        #sortSelect { 
+            padding-left: 1rem; min-width: 180px; 
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+        }
 
         .btn {
             padding: 0.8rem 1.5rem; border: none; border-radius: var(--radius-md);
@@ -132,6 +148,7 @@
         .btn-secondary:hover { background: var(--bg-body); border-color: #cbd5e1; }
         .btn-danger { background: #fee2e2; color: #dc2626; }
         .btn-danger:hover { background: #fecaca; }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
 
         .plant-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
 
@@ -181,8 +198,12 @@
             font-size: 0.8rem; color: var(--primary); margin-top: 4px; display: none; align-items: center; gap: 5px; cursor: pointer;
         }
         
-        /* Form Preview Image */
-        #imgPreview { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; display: none; margin-top: 10px; border: 1px solid var(--border); }
+        /* Form Preview Image (NEW FIX) */
+        .img-preview-container { 
+            width: 100%; height: 150px; background: #f1f5f9; border-radius: 8px; 
+            margin-top: 10px; display: none; overflow: hidden; border: 1px solid var(--border);
+        }
+        .img-preview-container img { width: 100%; height: 100%; object-fit: cover; }
 
         /* --- 9. MOBILE & RESPONSIVE --- */
         @media (max-width: 768px) {
@@ -217,7 +238,7 @@
 <body>
 
     <nav class="sidebar">
-        <div class="brand"><i class="fa-solid fa-leaf"></i> SG PRO</div>
+        <div class="brand"><i class="fa-solid fa-leaf"></i> SG MADNN</div>
         <div class="nav-link active" onclick="app.switchTab('dashboard')">
             <i class="fa-solid fa-chart-pie"></i> <span>Beranda</span>
         </div>
@@ -234,7 +255,7 @@
         <section id="dashboard" class="view-section">
             <div class="header-row">
                 <div class="header-title">
-                    <h1 id="greeting">Selamat Pagi, Petani!</h1>
+                    <h1 id="greeting">Selamat Pagi, MADNN!</h1>
                     <p id="dateDisplay">Memuat...</p>
                 </div>
                 <button class="theme-toggle" onclick="app.toggleTheme()">
@@ -245,13 +266,16 @@
             <div class="weather-banner">
                 <div class="weather-info">
                     <h2 id="weatherTemp">28°C</h2>
-                    <p id="weatherDesc">Cerah Berawan • Kelembaban 70%</p>
+                    <p id="weatherDesc">Memuat Cuaca...</p>
                     <div style="margin-top: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display: inline-block;">
                         <i class="fa-solid fa-droplet"></i> Tips: Cuaca panas, cek kelembaban tanah sore ini.
                     </div>
+                    <button id="rainDelayBtn" class="rain-delay-btn" onclick="app.applyRainDelay()">
+                        <i class="fa-solid fa-clock"></i> Tunda Siram 1 Hari (Hujan)
+                    </button>
                 </div>
                 <div class="weather-icon">
-                    <i class="fa-solid fa-cloud-sun"></i>
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
                 </div>
             </div>
             
@@ -282,7 +306,7 @@
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
                     <h3>Sebaran Ekosistem</h3>
-                    <button class="btn btn-secondary" style="padding:0.4rem 0.8rem; font-size:0.8rem;" onclick="app.switchTab('garden')">Lihat Detail</button>
+                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('garden')">Lihat Detail</button>
                 </div>
                 <div style="height: 250px;">
                     <canvas id="plantChart"></canvas>
@@ -301,9 +325,14 @@
             <div class="action-bar">
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" class="search-input" placeholder="Cari tanaman..." onkeyup="app.renderGrid(this.value)">
+                    <input type="text" class="search-input" placeholder="Cari tanaman..." id="plantSearch" onkeyup="app.renderGrid()">
                 </div>
-                <button class="btn btn-primary" onclick="app.openModal('formModal')">
+                <select class="search-input" style="width: auto; flex: 0 0 auto;" id="sortSelect" onchange="app.renderGrid()">
+                    <option value="urgency">Urutkan: Prioritas Siram</option>
+                    <option value="az">Urutkan: A-Z</option>
+                    <option value="newest">Urutkan: Terbaru</option>
+                </select>
+                <button class="btn btn-primary" onclick="app.openFormModal()">
                     <i class="fa-solid fa-plus"></i> <span>Tambah Baru</span>
                 </button>
             </div>
@@ -322,15 +351,18 @@
             <div class="card" style="max-width: 600px;">
                 <h3 style="margin-bottom: 1rem;">Manajemen Data</h3>
                 <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
-                    Ekspor data Anda secara berkala dalam format JSON agar aman.
+                    Ekspor data Anda secara berkala dalam format JSON agar aman, atau unduh laporan CSV untuk Excel.
                 </p>
                 
-                <div style="display:flex; gap:10px; margin-bottom: 20px;">
+                <div style="display:flex; gap:10px; margin-bottom: 20px; flex-wrap:wrap;">
                     <button class="btn btn-primary" onclick="app.exportData()">
-                        <i class="fa-solid fa-download"></i> Backup Data
+                        <i class="fa-solid fa-download"></i> Backup JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.exportCSV()">
+                        <i class="fa-solid fa-file-csv"></i> Laporan Excel
                     </button>
                     <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">
-                        <i class="fa-solid fa-upload"></i> Restore Data
+                        <i class="fa-solid fa-upload"></i> Restore
                     </button>
                     <input type="file" id="importFile" style="display:none" onchange="app.importData(this)">
                 </div>
@@ -338,6 +370,16 @@
                 <div style="padding:15px; background:var(--bg-body); border-radius:8px; font-size:0.9rem;">
                     <i class="fa-solid fa-database" style="color:var(--primary)"></i> 
                     Storage terpakai: <span id="storageUsed">0</span> KB
+                </div>
+
+                <div style="margin-top:20px; border-top: 1px solid var(--border); padding-top:20px;">
+                    <h3 style="margin-bottom: 1rem;">Notifikasi</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size:0.9rem;">
+                        Aktifkan notifikasi browser untuk mendapatkan pengingat penyiraman.
+                    </p>
+                    <button class="btn btn-secondary" onclick="app.requestNotification()">
+                        <i class="fa-solid fa-bell"></i> Minta Izin Notifikasi
+                    </button>
                 </div>
             </div>
         </section>
@@ -347,9 +389,11 @@
     <div class="modal-overlay" id="formModal">
         <div class="modal-box">
             <div style="padding: 2rem;">
-                <h2 style="margin-bottom: 0.5rem;">Tambah Tanaman</h2>
+                <h2 style="margin-bottom: 0.5rem;" id="formTitle">Tambah Tanaman</h2>
                 
                 <form id="plantForm">
+                    <input type="hidden" id="pId">
+                    
                     <div class="form-group">
                         <label class="form-label">Nama Tanaman</label>
                         <input type="text" id="pName" class="search-input" placeholder="Contoh: Cabai, Monstera" required onkeyup="app.checkPresets(this.value)">
@@ -392,8 +436,11 @@
                     <div class="form-group">
                         <label class="form-label">Foto</label>
                         <input type="file" id="pImageInput" accept="image/*" class="search-input">
+                        <div id="imgPreviewBox" class="img-preview-container">
+                            <img id="imgPreviewTag" src="">
+                        </div>
                         <small style="color:var(--text-muted); font-size:0.8rem; margin-top:5px; display:block;">
-                            *Kosongkan jika ingin gambar otomatis berdasarkan nama tanaman.
+                            *Kosongkan jika ingin gambar otomatis (atau pertahankan gambar lama saat edit).
                         </small>
                     </div>
 
@@ -413,9 +460,13 @@
                     <img id="dImage" src="" style="width:100%; height:100%; object-fit: cover;">
                     <div style="position: absolute; inset:0; background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.8));"></div>
                 </div>
-                <button onclick="app.closeModal('detailModal')" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.9); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                <button onclick="app.closeModal('detailModal')" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.9); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">
                     <i class="fa-solid fa-times" style="color:#0f172a"></i>
                 </button>
+                <button onclick="app.openEditForm()" style="position:absolute; top:15px; right:60px; background:rgba(255,255,255,0.9); border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:10;">
+                    <i class="fa-solid fa-pencil" style="color:#0f172a"></i>
+                </button>
+
                 <div style="position:absolute; bottom:20px; left:20px; color:white;">
                     <span id="dType" class="badge" style="background:white; color:var(--primary); margin-bottom:5px;">Tipe</span>
                     <h2 id="dName" style="margin:0; font-size:1.8rem;">Nama Tanaman</h2>
@@ -453,16 +504,26 @@
 
     <script>
         /**
-         * SMARTGARDEN PRO v2.1
-         * Fixed: Smart Auto Image Logic
+         * SMARTGARDEN PRO v2.3
+         * Changelog:
+         * - Added "Rain Delay" feature (Smart Weather Action).
+         * - Added "Edit Plant" functionality (CRUD Complete).
+         * - Added "CSV Export" for Excel reporting.
+         * - Fixed Image Preview bug in form.
+         * - Notification loop added (checks every hour).
          */
         
-        // --- DATA PRESETS & IMAGE DB ---
         const PLANT_KNOWLEDGE = {
-            // Format: keyword: { type, water, fert, imgId }
             'cabai': { type: 'Sayur', water: 1, fert: 14, img: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=600&q=80' },
-            'selada': { type: 'Sayur', water: 1, fert: 10, img: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-            'kangkung': { type: 'Sayur', water: 1, fert: 7, img: 'https://images.unsplash.com/photo-1662318183265-5bbe6578d1b0?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }
+            'tomat': { type: 'Sayur', water: 2, fert: 14, img: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=600&q=80' },
+            'selada': { type: 'Sayur', water: 1, fert: 10, img: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&w=600&q=80' },
+            'kangkung': { type: 'Sayur', water: 1, fert: 7, img: 'https://images.unsplash.com/photo-1662318183265-5bbe6578d1b0?auto=format&fit=crop&w=600&q=80' },
+            'monstera': { type: 'Hias', water: 7, fert: 30, img: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80' },
+            'kaktus': { type: 'Hias', water: 14, fert: 60, img: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=600&q=80' },
+            'anggrek': { type: 'Bunga', water: 3, fert: 14, img: 'https://images.unsplash.com/photo-1566634568864-159518a224f1?auto=format&fit=crop&w=600&q=80' },
+            'mawar': { type: 'Bunga', water: 2, fert: 14, img: 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=600&q=80' },
+            'mint': { type: 'Herbal', water: 1, fert: 30, img: 'https://images.unsplash.com/photo-1626468452146-560416997429?auto=format&fit=crop&w=600&q=80' },
+            'jahe': { type: 'Herbal', water: 3, fert: 30, img: 'https://images.unsplash.com/photo-1635398656643-27c7d4281788?auto=format&fit=crop&w=600&q=80' }
         };
 
         const DEFAULT_IMG = 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80';
@@ -470,33 +531,44 @@
         const app = {
             data: [],
             currentId: null,
+            editingId: null, // NEW: Track edit state
             chart: null,
             activePreset: null,
 
             init() {
                 this.data = JSON.parse(localStorage.getItem('sg_pro_data')) || [];
                 
-                // Set Theme
+                // Theme & Date
                 const theme = localStorage.getItem('sg_theme') || 'light';
                 document.documentElement.setAttribute('data-theme', theme);
                 
-                // Set Date & Greeting
                 const now = new Date();
                 const hours = now.getHours();
                 let greet = hours < 11 ? "Selamat Pagi" : hours < 15 ? "Selamat Siang" : hours < 18 ? "Selamat Sore" : "Selamat Malam";
-                document.getElementById('greeting').innerText = `${greet}, Admin`;
+                document.getElementById('greeting').innerText = `${greet}, MADNN`;
                 document.getElementById('dateDisplay').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 
                 // Calculate Storage
-                const str = JSON.stringify(this.data);
-                document.getElementById('storageUsed').innerText = (str.length / 1024).toFixed(2);
+                this.updateStorageInfo();
 
                 this.updateUI();
+                this.fetchWeather();
+                this.requestNotification();
+                this.checkReminders();
+
+                // Setup Notification Loop (Check every 1 hour)
+                setInterval(() => { this.checkReminders(); }, 3600000); 
             },
 
             save() {
                 localStorage.setItem('sg_pro_data', JSON.stringify(this.data));
                 this.updateUI();
+                this.updateStorageInfo();
+            },
+            
+            updateStorageInfo() {
+                const str = JSON.stringify(this.data);
+                document.getElementById('storageUsed').innerText = (str.length / 1024).toFixed(2);
             },
 
             updateUI() {
@@ -504,7 +576,77 @@
                 this.renderGrid();
             },
 
-            // --- DASHBOARD LOGIC ---
+            // --- WEATHER & RAIN DELAY (IMPROVED) ---
+            fetchWeather() {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        try {
+                            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&forecast_days=1`);
+                            const data = await res.json();
+                            
+                            const temp = Math.round(data.current_weather.temperature);
+                            const code = data.current_weather.weathercode;
+                            
+                            document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                            
+                            let desc = "Cerah";
+                            let icon = "fa-sun";
+                            let tip = "Cek kelembaban tanah sore ini.";
+                            let isRain = false;
+
+                            if(code >= 1 && code <= 3) { desc = "Berawan"; icon = "fa-cloud"; }
+                            if(code >= 51) { 
+                                desc = "Hujan"; 
+                                icon = "fa-cloud-showers-heavy"; 
+                                tip = "Tanah basah, tunda penyiraman.";
+                                isRain = true;
+                            }
+                            if(code >= 61) { 
+                                desc = "Hujan Lebat"; 
+                                icon = "fa-cloud-rain"; 
+                                tip = "Kelembaban tinggi, jaga drainase.";
+                                isRain = true;
+                            }
+
+                            document.getElementById('weatherDesc').innerText = `${desc} • Lokasi Terdeteksi`;
+                            document.querySelector('.weather-icon i').className = `fa-solid ${icon}`;
+                            document.querySelector('.weather-info div').innerHTML = `<i class="fa-solid fa-circle-info"></i> Tips: ${tip}`;
+                            
+                            // Show Rain Delay button if raining
+                            const btn = document.getElementById('rainDelayBtn');
+                            btn.style.display = isRain ? 'inline-flex' : 'none';
+
+                        } catch (err) {
+                            console.log("Weather Error:", err);
+                        }
+                    }, () => {
+                        document.getElementById('weatherDesc').innerText = "Lokasi tidak aktif";
+                    });
+                }
+            },
+
+            applyRainDelay() {
+                if(confirm("Hujan terdeteksi! Tunda jadwal siram semua tanaman selama 1 hari?")) {
+                    this.data.forEach(p => {
+                        // Tambah 1 hari (86400000 ms) ke lastWater
+                        const current = new Date(p.lastWater).getTime();
+                        p.lastWater = new Date(current + 86400000).toISOString();
+                        
+                        p.logs.push({
+                            date: new Date().toISOString(),
+                            type: 'siram',
+                            action: 'Ditunda 1 Hari (Hujan)'
+                        });
+                    });
+                    this.save();
+                    this.showToast("Jadwal diperbarui otomatis!");
+                }
+            },
+
+            // --- DASHBOARD ---
             renderDashboard() {
                 document.getElementById('totalCount').innerText = this.data.length;
                 
@@ -555,13 +697,29 @@
                 });
             },
 
-            // --- GRID LOGIC ---
-            renderGrid(filter = '') {
+            // --- GRID & SORT ---
+            renderGrid() {
                 const container = document.getElementById('plantGrid');
+                const filter = document.getElementById('plantSearch').value || '';
+                const sortMode = document.getElementById('sortSelect').value || 'urgency';
                 container.innerHTML = '';
                 
-                const filtered = this.data.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+                let filtered = this.data.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
                 
+                filtered.sort((a, b) => {
+                    const today = new Date().setHours(0,0,0,0);
+                    const nextWaterA = new Date(a.lastWater).setHours(0,0,0,0) + (a.waterFreq * 86400000);
+                    const diffA = (nextWaterA - today);
+                    
+                    const nextWaterB = new Date(b.lastWater).setHours(0,0,0,0) + (b.waterFreq * 86400000);
+                    const diffB = (nextWaterB - today);
+
+                    if (sortMode === 'urgency') return diffA - diffB;
+                    if (sortMode === 'az') return a.name.localeCompare(b.name);
+                    if (sortMode === 'newest') return b.id - a.id;
+                    return 0;
+                });
+
                 if (filtered.length === 0) {
                     container.innerHTML = `
                         <div style="grid-column:1/-1; text-align:center; padding:3rem; opacity:0.5;">
@@ -577,8 +735,6 @@
                     const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
                     const diffDays = Math.ceil((nextWater - today) / (86400000));
                     const isUrgent = diffDays <= 0;
-
-                    // Fallback image logic if data corrupted
                     const img = p.image || DEFAULT_IMG;
                     
                     const html = `
@@ -600,7 +756,7 @@
                 });
             },
 
-            // --- DETAIL & ACTIONS ---
+            // --- DETAIL, ACTIONS, & EDIT (IMPROVED) ---
             openDetail(id) {
                 const p = this.data.find(x => x.id === id);
                 if(!p) return;
@@ -616,6 +772,42 @@
 
                 this.renderTimeline(p);
                 this.openModal('detailModal');
+            },
+
+            openFormModal() {
+                // Reset Form for Add Mode
+                document.getElementById('formTitle').innerText = "Tambah Tanaman";
+                document.getElementById('plantForm').reset();
+                document.getElementById('pId').value = ""; // Clear ID
+                this.editingId = null;
+                document.getElementById('imgPreviewBox').style.display = 'none';
+                this.openModal('formModal');
+            },
+
+            openEditForm() {
+                // Populate Form for Edit Mode
+                const p = this.data.find(x => x.id === this.currentId);
+                if(!p) return;
+
+                this.editingId = p.id;
+                document.getElementById('formTitle').innerText = "Edit Tanaman";
+                document.getElementById('pId').value = p.id;
+                document.getElementById('pName').value = p.name;
+                document.getElementById('pType').value = p.type;
+                document.getElementById('pDate').value = p.date;
+                document.getElementById('pWaterFreq').value = p.waterFreq;
+                document.getElementById('pFertFreq').value = p.fertFreq;
+
+                // Show existing image preview if available
+                if (p.image) {
+                    document.getElementById('imgPreviewBox').style.display = 'block';
+                    document.getElementById('imgPreviewTag').src = p.image;
+                } else {
+                    document.getElementById('imgPreviewBox').style.display = 'none';
+                }
+
+                this.closeModal('detailModal');
+                this.openModal('formModal');
             },
 
             renderTimeline(p) {
@@ -681,12 +873,11 @@
                 }
             },
 
-            // --- SMART AUTO IMAGE LOGIC (NEW) ---
+            // --- SMART LOGIC ---
             checkPresets(val) {
+                if (this.editingId) return; // Don't suggest presets when editing existing data
                 const hint = document.getElementById('presetHint');
                 const lower = val.toLowerCase();
-                
-                // Find matching key in Knowledge Base
                 const matchKey = Object.keys(PLANT_KNOWLEDGE).find(k => lower.includes(k));
                 
                 if(matchKey) {
@@ -715,7 +906,74 @@
                 return DEFAULT_IMG;
             },
 
-            // --- UTILITIES ---
+            // --- NOTIFICATIONS ---
+            requestNotification() {
+                if ("Notification" in window) {
+                    if (Notification.permission !== "denied" && Notification.permission !== "granted") {
+                         Notification.requestPermission();
+                    }
+                }
+            },
+
+            checkReminders() {
+                if (Notification.permission !== "granted") return;
+                const today = new Date().setHours(0,0,0,0);
+                const thirstyPlants = this.data.filter(p => {
+                    const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
+                    return today >= nextWater;
+                });
+                
+                if (thirstyPlants.length > 0) {
+                    new Notification("SmartGarden Reminder", {
+                        body: `Ada ${thirstyPlants.length} tanaman yang harus disiram sekarang!`,
+                        icon: "https://cdn-icons-png.flaticon.com/512/628/628283.png"
+                    });
+                }
+            },
+
+            // --- EXPORT / IMPORT ---
+            exportData() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = `smartgarden_backup_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+            },
+
+            exportCSV() { // NEW: CSV EXPORT
+                let csv = "Nama Tanaman,Tipe,Tgl Aktivitas,Jenis Aktivitas,Keterangan,Jumlah (Kg)\n";
+                
+                this.data.forEach(p => {
+                    p.logs.forEach(l => {
+                        const date = new Date(l.date).toLocaleDateString('id-ID');
+                        const amount = l.amount || 0;
+                        csv += `"${p.name}","${p.type}","${date}","${l.type}","${l.action}",${amount}\n`;
+                    });
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `smartgarden_report_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();
+            },
+
+            importData(input) {
+                const file = input.files[0];
+                if(!file) return;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        this.data = JSON.parse(e.target.result);
+                        this.save();
+                        this.showToast("Restore berhasil!");
+                    } catch(err) { alert("File rusak!"); }
+                };
+                reader.readAsText(file);
+            },
+
+            // --- UTILS ---
             switchTab(id) {
                 document.querySelectorAll('.view-section').forEach(e => e.style.display = 'none');
                 document.getElementById(id).style.display = 'block';
@@ -760,32 +1018,25 @@
                         }
                     }
                 });
-            },
-
-            exportData() {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
-                const a = document.createElement('a');
-                a.href = dataStr;
-                a.download = `smartgarden_backup_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
-            },
-
-            importData(input) {
-                const file = input.files[0];
-                if(!file) return;
-                const reader = new FileReader();
-                reader.onload = e => {
-                    try {
-                        this.data = JSON.parse(e.target.result);
-                        this.save();
-                        this.showToast("Restore berhasil!");
-                    } catch(err) { alert("File rusak!"); }
-                };
-                reader.readAsText(file);
             }
         };
 
-        // --- FORM SUBMIT HANDLER ---
+        // --- EVENT LISTENERS ---
+        
+        // Form Image Preview Handler
+        document.getElementById('pImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('imgPreviewBox').style.display = 'block';
+                    document.getElementById('imgPreviewTag').src = evt.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form Submit Handler (CREATE OR UPDATE)
         document.getElementById('plantForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -795,37 +1046,52 @@
             try {
                 const name = document.getElementById('pName').value;
                 const file = document.getElementById('pImageInput').files[0];
+                const editingId = document.getElementById('pId').value;
                 
                 let imgBase64 = null;
                 
-                // LOGIC GAMBAR OTOMATIS DI SINI:
                 if(file) {
-                    // Jika user upload file, pakai file itu
                     imgBase64 = await app.compressImage(file);
-                } else {
-                    // Jika tidak upload, cari gambar berdasarkan nama
+                } else if (!editingId) {
+                    // Only auto-fetch image if new entry and no file uploaded
                     imgBase64 = app.getAutoImage(name);
                 }
 
-                const newPlant = {
-                    id: Date.now(),
-                    name: name,
-                    type: document.getElementById('pType').value,
-                    date: document.getElementById('pDate').value,
-                    waterFreq: parseInt(document.getElementById('pWaterFreq').value),
-                    fertFreq: parseInt(document.getElementById('pFertFreq').value),
-                    lastWater: document.getElementById('pDate').value,
-                    lastFert: document.getElementById('pDate').value,
-                    image: imgBase64,
-                    logs: [{ date: new Date().toISOString(), type: 'init', action: 'Ditanam' }]
-                };
+                if (editingId) {
+                    // EDIT MODE
+                    const idx = app.data.findIndex(p => p.id == editingId);
+                    if (idx > -1) {
+                        app.data[idx].name = name;
+                        app.data[idx].type = document.getElementById('pType').value;
+                        app.data[idx].date = document.getElementById('pDate').value;
+                        app.data[idx].waterFreq = parseInt(document.getElementById('pWaterFreq').value);
+                        app.data[idx].fertFreq = parseInt(document.getElementById('pFertFreq').value);
+                        if(imgBase64) app.data[idx].image = imgBase64; // Update img only if new one provided
+                    }
+                    app.showToast("Data diperbarui!");
+                } else {
+                    // CREATE MODE
+                    const newPlant = {
+                        id: Date.now(),
+                        name: name,
+                        type: document.getElementById('pType').value,
+                        date: document.getElementById('pDate').value,
+                        waterFreq: parseInt(document.getElementById('pWaterFreq').value),
+                        fertFreq: parseInt(document.getElementById('pFertFreq').value),
+                        lastWater: document.getElementById('pDate').value,
+                        lastFert: document.getElementById('pDate').value,
+                        image: imgBase64,
+                        logs: [{ date: new Date().toISOString(), type: 'init', action: 'Ditanam' }]
+                    };
+                    app.data.unshift(newPlant);
+                    app.showToast("Tanaman ditambahkan!");
+                }
 
-                app.data.unshift(newPlant);
                 app.save();
                 app.closeModal('formModal');
                 e.target.reset();
-                app.showToast("Tanaman ditambahkan!");
                 app.switchTab('garden');
+
             } catch (err) {
                 console.error(err);
                 alert("Gagal menyimpan.");
@@ -835,7 +1101,7 @@
             }
         });
 
-        // START APP
+        // Start App
         document.addEventListener('DOMContentLoaded', () => app.init());
 
     </script>
