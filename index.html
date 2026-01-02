@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartGarden MADNN</title>
+    <title>SmartGarden MADNN v3.1</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* --- 1. THEME VARIABLES --- */
+        /* --- COPY STYLE DARI VERSI SEBELUMNYA (TIDAK BERUBAH BANYAK) --- */
         :root {
             --primary: #059669;
             --primary-light: #d1fae5;
@@ -41,12 +41,10 @@
             --shadow-md: none;
         }
 
-        /* --- 2. GLOBAL RESET --- */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         
         body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; transition: background 0.3s; }
 
-        /* --- 3. SIDEBAR --- */
         .sidebar {
             width: 260px; background: var(--bg-surface); border-right: 1px solid var(--border);
             display: flex; flex-direction: column; padding: 1.5rem; z-index: 50; transition: 0.3s;
@@ -63,21 +61,24 @@
         .nav-link:hover { background: var(--bg-body); color: var(--primary); }
         .nav-link.active { background: var(--primary-light); color: var(--primary); }
 
-        /* --- 4. MAIN CONTENT --- */
         .main-content { flex: 1; overflow-y: auto; padding: 2rem; position: relative; scroll-behavior: smooth; }
         
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
         .header-title h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 5px; }
         .header-title p { color: var(--text-muted); font-size: 0.9rem; }
         
+        .digital-clock {
+            font-size: 2.5rem; font-weight: 800; color: var(--text-main); letter-spacing: -1px; line-height: 1;
+        }
+        .date-display { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; margin-top: 5px; }
+
         .theme-toggle {
             background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);
             width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
-            cursor: pointer; transition: 0.3s;
+            cursor: pointer; transition: 0.3s; margin-left: 10px;
         }
         .theme-toggle:hover { color: var(--text-main); border-color: var(--text-muted); }
 
-        /* --- 5. WEATHER WIDGET --- */
         .weather-banner {
             background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             border-radius: var(--radius-lg); padding: 1.5rem 2rem; color: white;
@@ -93,7 +94,6 @@
         .weather-info p { opacity: 0.9; margin-top: 5px; font-weight: 500; }
         .weather-icon { font-size: 3rem; opacity: 0.9; }
         
-        /* Rain Delay Button */
         .rain-delay-btn {
             background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
             color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer;
@@ -102,7 +102,6 @@
         }
         .rain-delay-btn:hover { background: rgba(255,255,255,0.3); }
 
-        /* --- 6. CARDS & STATS --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         
         .card {
@@ -119,7 +118,6 @@
         .stat-value { font-size: 2rem; font-weight: 800; color: var(--text-main); }
         .stat-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
 
-        /* --- 7. PLANT GRID --- */
         .action-bar { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
         .search-wrapper { position: relative; flex: 1; min-width: 250px; }
         .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
@@ -176,8 +174,8 @@
             display: flex; align-items: center; justify-content: center; gap: 6px;
         }
         .status-pill.urgent { background: #fef2f2; color: #dc2626; border-color: #fecaca; animation: pulse 2s infinite; }
+        .status-pill.today { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
 
-        /* --- 8. MODAL --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
             z-index: 100; display: none; place-items: center; opacity: 0; transition: 0.3s;
@@ -198,14 +196,30 @@
             font-size: 0.8rem; color: var(--primary); margin-top: 4px; display: none; align-items: center; gap: 5px; cursor: pointer;
         }
         
-        /* Form Preview Image (NEW FIX) */
+        .day-selector-container {
+            display: flex; gap: 8px; justify-content: space-between; margin-bottom: 8px;
+        }
+        .day-check {
+            flex: 1; height: 40px; border: 1px solid var(--border); border-radius: 8px;
+            display: grid; place-items: center; cursor: pointer; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-muted); background: var(--bg-body); transition: 0.2s; user-select: none;
+        }
+        .day-check.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+        }
+        /* Pembeda warna untuk pupuk saat aktif */
+        .day-check.fert-active {
+            background: #f59e0b; color: white; border-color: #f59e0b;
+        }
+        
+        .day-check:hover:not(.active):not(.fert-active) { border-color: var(--primary); color: var(--primary); }
+
         .img-preview-container { 
             width: 100%; height: 150px; background: #f1f5f9; border-radius: 8px; 
             margin-top: 10px; display: none; overflow: hidden; border: 1px solid var(--border);
         }
         .img-preview-container img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- 9. MOBILE & RESPONSIVE --- */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar {
@@ -221,11 +235,12 @@
             .header-title h1 { font-size: 1.5rem; }
             .weather-banner { flex-direction: column; text-align: center; gap: 1rem; }
             .weather-banner::before { display: none; }
+            .header-row { flex-direction: column; gap: 1rem; }
+            .digital-clock { font-size: 2rem; }
         }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
         
-        /* Toast */
         .toast {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
             background: #1e293b; color: white; padding: 12px 24px; border-radius: 50px;
@@ -256,11 +271,16 @@
             <div class="header-row">
                 <div class="header-title">
                     <h1 id="greeting">Selamat Pagi, MADNN!</h1>
-                    <p id="dateDisplay">Memuat...</p>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <button class="theme-toggle" onclick="app.toggleTheme()">
+                            <i class="fa-solid fa-moon"></i>
+                        </button>
+                    </div>
                 </div>
-                <button class="theme-toggle" onclick="app.toggleTheme()">
-                    <i class="fa-solid fa-moon"></i>
-                </button>
+                <div style="text-align: right;">
+                    <div id="clockDisplay" class="digital-clock">00:00:00</div>
+                    <div id="dateDisplay" class="date-display">Memuat...</div>
+                </div>
             </div>
 
             <div class="weather-banner">
@@ -268,10 +288,10 @@
                     <h2 id="weatherTemp">28°C</h2>
                     <p id="weatherDesc">Memuat Cuaca...</p>
                     <div style="margin-top: 10px; font-size: 0.9rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 20px; display: inline-block;">
-                        <i class="fa-solid fa-droplet"></i> Tips: Cuaca panas, cek kelembaban tanah sore ini.
+                        <i class="fa-solid fa-droplet"></i> Tips: Cuaca panas, cek kelembaban tanah.
                     </div>
                     <button id="rainDelayBtn" class="rain-delay-btn" onclick="app.applyRainDelay()">
-                        <i class="fa-solid fa-clock"></i> Tunda Siram 1 Hari (Hujan)
+                        <i class="fa-solid fa-clock"></i> Lewati Jadwal Hari Ini (Hujan)
                     </button>
                 </div>
                 <div class="weather-icon">
@@ -289,17 +309,17 @@
                 </div>
                 <div class="card stat-card">
                     <div class="stat-head">
-                        <span class="stat-label">BUTUH AIR</span>
-                        <div class="stat-icon" style="background: #fef2f2; color: #ef4444;"><i class="fa-solid fa-droplet-slash"></i></div>
+                        <span class="stat-label">SIRAM HARI INI</span>
+                        <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;"><i class="fa-solid fa-droplet"></i></div>
                     </div>
                     <div class="stat-value" id="waterCount">0</div>
                 </div>
                 <div class="card stat-card">
                     <div class="stat-head">
-                        <span class="stat-label">TOTAL PANEN</span>
-                        <div class="stat-icon" style="background: #fff7ed; color: #f97316;"><i class="fa-solid fa-basket-shopping"></i></div>
+                        <span class="stat-label">PUPUK HARI INI</span>
+                        <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;"><i class="fa-solid fa-flask"></i></div>
                     </div>
-                    <div class="stat-value" id="harvestCount">0 <span style="font-size:0.9rem; color:var(--text-muted)">kg</span></div>
+                    <div class="stat-value" id="fertCount">0</div>
                 </div>
             </div>
 
@@ -318,7 +338,7 @@
             <div class="header-row">
                 <div class="header-title">
                     <h1>Koleksi Tanaman</h1>
-                    <p>Kelola jadwal perawatan dan pertumbuhan.</p>
+                    <p>Kelola jadwal perawatan berbasis hari mingguan.</p>
                 </div>
             </div>
             
@@ -328,7 +348,7 @@
                     <input type="text" class="search-input" placeholder="Cari tanaman..." id="plantSearch" onkeyup="app.renderGrid()">
                 </div>
                 <select class="search-input" style="width: auto; flex: 0 0 auto;" id="sortSelect" onchange="app.renderGrid()">
-                    <option value="urgency">Urutkan: Prioritas Siram</option>
+                    <option value="urgency">Urutkan: Jadwal Terdekat</option>
                     <option value="az">Urutkan: A-Z</option>
                     <option value="newest">Urutkan: Terbaru</option>
                 </select>
@@ -337,8 +357,7 @@
                 </button>
             </div>
 
-            <div class="plant-grid" id="plantGrid">
-                </div>
+            <div class="plant-grid" id="plantGrid"></div>
         </section>
 
         <section id="settings" class="view-section" style="display:none;">
@@ -375,7 +394,7 @@
                 <div style="margin-top:20px; border-top: 1px solid var(--border); padding-top:20px;">
                     <h3 style="margin-bottom: 1rem;">Notifikasi</h3>
                     <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size:0.9rem;">
-                        Aktifkan notifikasi browser untuk mendapatkan pengingat penyiraman.
+                        Aktifkan notifikasi browser untuk mendapatkan pengingat penyiraman sesuai hari.
                     </p>
                     <button class="btn btn-secondary" onclick="app.requestNotification()">
                         <i class="fa-solid fa-bell"></i> Minta Izin Notifikasi
@@ -419,16 +438,32 @@
                         </div>
                     </div>
                     
-                    <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--border); margin-bottom: 1.2rem;">
-                        <label class="form-label" style="color:var(--primary); margin-bottom:10px;">Jadwal Perawatan (Hari)</label>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                            <div>
-                                <label style="font-size:0.8rem;">Siram setiap:</label>
-                                <input type="number" id="pWaterFreq" class="search-input" placeholder="1" required min="1">
+                    <div style="background: var(--bg-body); padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--primary); margin-bottom: 1rem;">
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label class="form-label" style="color:var(--primary);"><i class="fa-solid fa-droplet"></i> Jadwal Siram Mingguan</label>
+                            <div class="day-selector-container" id="waterDayContainer">
+                                <div class="day-check" data-day="1" onclick="app.toggleDay(this, 'water')">Sen</div>
+                                <div class="day-check" data-day="2" onclick="app.toggleDay(this, 'water')">Sel</div>
+                                <div class="day-check" data-day="3" onclick="app.toggleDay(this, 'water')">Rab</div>
+                                <div class="day-check" data-day="4" onclick="app.toggleDay(this, 'water')">Kam</div>
+                                <div class="day-check" data-day="5" onclick="app.toggleDay(this, 'water')">Jum</div>
+                                <div class="day-check" data-day="6" onclick="app.toggleDay(this, 'water')">Sab</div>
+                                <div class="day-check" data-day="0" onclick="app.toggleDay(this, 'water')">Min</div>
                             </div>
-                            <div>
-                                <label style="font-size:0.8rem;">Pupuk setiap:</label>
-                                <input type="number" id="pFertFreq" class="search-input" placeholder="14" required min="1">
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fffbeb; padding: 1rem; border-radius: var(--radius-md); border: 1px dashed #f59e0b; margin-bottom: 1.2rem;">
+                        <div class="form-group" style="margin-bottom:0.5rem;">
+                            <label class="form-label" style="color:#b45309;"><i class="fa-solid fa-flask"></i> Jadwal Pupuk Mingguan</label>
+                            <div class="day-selector-container" id="fertDayContainer">
+                                <div class="day-check" data-day="1" onclick="app.toggleDay(this, 'fert')">Sen</div>
+                                <div class="day-check" data-day="2" onclick="app.toggleDay(this, 'fert')">Sel</div>
+                                <div class="day-check" data-day="3" onclick="app.toggleDay(this, 'fert')">Rab</div>
+                                <div class="day-check" data-day="4" onclick="app.toggleDay(this, 'fert')">Kam</div>
+                                <div class="day-check" data-day="5" onclick="app.toggleDay(this, 'fert')">Jum</div>
+                                <div class="day-check" data-day="6" onclick="app.toggleDay(this, 'fert')">Sab</div>
+                                <div class="day-check" data-day="0" onclick="app.toggleDay(this, 'fert')">Min</div>
                             </div>
                         </div>
                     </div>
@@ -440,7 +475,7 @@
                             <img id="imgPreviewTag" src="">
                         </div>
                         <small style="color:var(--text-muted); font-size:0.8rem; margin-top:5px; display:block;">
-                            *Kosongkan jika ingin gambar otomatis (atau pertahankan gambar lama saat edit).
+                            *Kosongkan jika ingin gambar otomatis.
                         </small>
                     </div>
 
@@ -470,7 +505,8 @@
                 <div style="position:absolute; bottom:20px; left:20px; color:white;">
                     <span id="dType" class="badge" style="background:white; color:var(--primary); margin-bottom:5px;">Tipe</span>
                     <h2 id="dName" style="margin:0; font-size:1.8rem;">Nama Tanaman</h2>
-                    <p id="dAge" style="font-size:0.9rem; opacity:0.9;">Umur: 12 Hari</p>
+                    <p id="dScheduleInfo" style="font-size:0.85rem; opacity:0.9; margin-top:4px;">Jadwal Siram: -</p>
+                    <p id="dFertInfo" style="font-size:0.85rem; opacity:0.9;">Jadwal Pupuk: -</p>
                 </div>
             </div>
 
@@ -504,59 +540,63 @@
 
     <script>
         /**
-         * SMARTGARDEN PRO v2.3
-         * Changelog:
-         * - Added "Rain Delay" feature (Smart Weather Action).
-         * - Added "Edit Plant" functionality (CRUD Complete).
-         * - Added "CSV Export" for Excel reporting.
-         * - Fixed Image Preview bug in form.
-         * - Notification loop added (checks every hour).
+         * SMARTGARDEN PRO v3.1 (Update: Jam di Log & Jadwal Pupuk Mingguan)
          */
         
+        // Update Knowledge dengan data jadwal (0=Min, 1=Sen, ... 6=Sab)
+        // Fert sekarang menggunakan Array [Hari]
         const PLANT_KNOWLEDGE = {
-            'cabai': { type: 'Sayur', water: 1, fert: 14, img: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=600&q=80' },
-            'tomat': { type: 'Sayur', water: 2, fert: 14, img: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=600&q=80' },
-            'selada': { type: 'Sayur', water: 1, fert: 10, img: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&w=600&q=80' },
-            'kangkung': { type: 'Sayur', water: 1, fert: 7, img: 'https://images.unsplash.com/photo-1662318183265-5bbe6578d1b0?auto=format&fit=crop&w=600&q=80' },
-            'monstera': { type: 'Hias', water: 7, fert: 30, img: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80' },
-            'kaktus': { type: 'Hias', water: 14, fert: 60, img: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=600&q=80' },
-            'anggrek': { type: 'Bunga', water: 3, fert: 14, img: 'https://images.unsplash.com/photo-1566634568864-159518a224f1?auto=format&fit=crop&w=600&q=80' },
-            'mawar': { type: 'Bunga', water: 2, fert: 14, img: 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=600&q=80' },
-            'mint': { type: 'Herbal', water: 1, fert: 30, img: 'https://images.unsplash.com/photo-1626468452146-560416997429?auto=format&fit=crop&w=600&q=80' },
-            'jahe': { type: 'Herbal', water: 3, fert: 30, img: 'https://images.unsplash.com/photo-1635398656643-27c7d4281788?auto=format&fit=crop&w=600&q=80' }
+            'cabai': { type: 'Sayur', schedule: [1,3,5], fert: [1], img: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=600&q=80' },
+            'tomat': { type: 'Sayur', schedule: [1,4], fert: [1], img: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=600&q=80' },
+            'selada': { type: 'Sayur', schedule: [1,3,5], fert: [1], img: 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&w=600&q=80' },
+            'kangkung': { type: 'Sayur', schedule: [1,2,3,4,5,6,0], fert: [1], img: 'https://images.unsplash.com/photo-1662318183265-5bbe6578d1b0?auto=format&fit=crop&w=600&q=80' },
+            'monstera': { type: 'Hias', schedule: [1], fert: [1], img: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80' },
+            'kaktus': { type: 'Hias', schedule: [6], fert: [6], img: 'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=600&q=80' },
+            'anggrek': { type: 'Bunga', schedule: [2,5], fert: [2], img: 'https://images.unsplash.com/photo-1566634568864-159518a224f1?auto=format&fit=crop&w=600&q=80' },
+            'mawar': { type: 'Bunga', schedule: [1,4], fert: [1], img: 'https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?auto=format&fit=crop&w=600&q=80' },
+            'mint': { type: 'Herbal', schedule: [1,3,5], fert: [1], img: 'https://images.unsplash.com/photo-1626468452146-560416997429?auto=format&fit=crop&w=600&q=80' },
+            'jahe': { type: 'Herbal', schedule: [2,5], fert: [2], img: 'https://images.unsplash.com/photo-1635398656643-27c7d4281788?auto=format&fit=crop&w=600&q=80' }
         };
 
         const DEFAULT_IMG = 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80';
+        const DAYS_MAP = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
         const app = {
             data: [],
             currentId: null,
-            editingId: null, // NEW: Track edit state
+            editingId: null, 
             chart: null,
             activePreset: null,
 
             init() {
-                this.data = JSON.parse(localStorage.getItem('sg_pro_data')) || [];
-                
-                // Theme & Date
+                // Migration logic:
+                let rawData = JSON.parse(localStorage.getItem('sg_pro_data')) || [];
+                this.data = rawData.map(p => {
+                    // Fix Water Schedule
+                    if (!p.waterSchedule) {
+                        p.waterSchedule = [1, 4]; 
+                        delete p.waterFreq;
+                    }
+                    // Fix Fertilizer Schedule (Dari Freq (int) ke Schedule (array))
+                    if (!p.fertSchedule) {
+                        // Default fallback: Senin saja
+                        p.fertSchedule = [1];
+                        // Jika ada data lama fertFreq, kita biarkan saja sebagai legacy atau hapus
+                    }
+                    return p;
+                });
+
+                // Theme
                 const theme = localStorage.getItem('sg_theme') || 'light';
                 document.documentElement.setAttribute('data-theme', theme);
                 
-                const now = new Date();
-                const hours = now.getHours();
-                let greet = hours < 11 ? "Selamat Pagi" : hours < 15 ? "Selamat Siang" : hours < 18 ? "Selamat Sore" : "Selamat Malam";
-                document.getElementById('greeting').innerText = `${greet}, MADNN`;
-                document.getElementById('dateDisplay').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                
-                // Calculate Storage
+                this.startClock();
                 this.updateStorageInfo();
-
                 this.updateUI();
                 this.fetchWeather();
                 this.requestNotification();
                 this.checkReminders();
 
-                // Setup Notification Loop (Check every 1 hour)
                 setInterval(() => { this.checkReminders(); }, 3600000); 
             },
 
@@ -564,6 +604,20 @@
                 localStorage.setItem('sg_pro_data', JSON.stringify(this.data));
                 this.updateUI();
                 this.updateStorageInfo();
+            },
+            
+            startClock() {
+                const updateTime = () => {
+                    const now = new Date();
+                    document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+                    
+                    const hours = now.getHours();
+                    let greet = hours < 11 ? "Selamat Pagi" : hours < 15 ? "Selamat Siang" : hours < 18 ? "Selamat Sore" : "Selamat Malam";
+                    document.getElementById('greeting').innerText = `${greet}, MADNN`;
+                    document.getElementById('dateDisplay').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                };
+                updateTime();
+                setInterval(updateTime, 1000);
             },
             
             updateStorageInfo() {
@@ -576,74 +630,39 @@
                 this.renderGrid();
             },
 
-            // --- WEATHER & RAIN DELAY (IMPROVED) ---
-            fetchWeather() {
-                if ("geolocation" in navigator) {
-                    navigator.geolocation.getCurrentPosition(async (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        
-                        try {
-                            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&forecast_days=1`);
-                            const data = await res.json();
-                            
-                            const temp = Math.round(data.current_weather.temperature);
-                            const code = data.current_weather.weathercode;
-                            
-                            document.getElementById('weatherTemp').innerText = `${temp}°C`;
-                            
-                            let desc = "Cerah";
-                            let icon = "fa-sun";
-                            let tip = "Cek kelembaban tanah sore ini.";
-                            let isRain = false;
+            // --- LOGIC: NEXT SCHEDULE GENERIC ---
+            // Mencari tanggal berikutnya berdasarkan jadwal hari
+            getNextDate(scheduleArr, lastDateStr) {
+                if(!scheduleArr || scheduleArr.length === 0) return new Date(); // Fallback
 
-                            if(code >= 1 && code <= 3) { desc = "Berawan"; icon = "fa-cloud"; }
-                            if(code >= 51) { 
-                                desc = "Hujan"; 
-                                icon = "fa-cloud-showers-heavy"; 
-                                tip = "Tanah basah, tunda penyiraman.";
-                                isRain = true;
-                            }
-                            if(code >= 61) { 
-                                desc = "Hujan Lebat"; 
-                                icon = "fa-cloud-rain"; 
-                                tip = "Kelembaban tinggi, jaga drainase.";
-                                isRain = true;
-                            }
-
-                            document.getElementById('weatherDesc').innerText = `${desc} • Lokasi Terdeteksi`;
-                            document.querySelector('.weather-icon i').className = `fa-solid ${icon}`;
-                            document.querySelector('.weather-info div').innerHTML = `<i class="fa-solid fa-circle-info"></i> Tips: ${tip}`;
-                            
-                            // Show Rain Delay button if raining
-                            const btn = document.getElementById('rainDelayBtn');
-                            btn.style.display = isRain ? 'inline-flex' : 'none';
-
-                        } catch (err) {
-                            console.log("Weather Error:", err);
-                        }
-                    }, () => {
-                        document.getElementById('weatherDesc').innerText = "Lokasi tidak aktif";
-                    });
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                const currentDay = today.getDay(); // 0-6
+                const schedule = scheduleArr.sort((a,b) => a-b);
+                
+                // Cek apakah hari ini jadwalnya?
+                if (schedule.includes(currentDay)) {
+                    // Cek apakah sudah dilakukan hari ini
+                    const lastAction = new Date(lastDateStr).setHours(0,0,0,0);
+                    if (lastAction < today.getTime()) {
+                        return today; // Harus dilakukan hari ini
+                    }
                 }
-            },
 
-            applyRainDelay() {
-                if(confirm("Hujan terdeteksi! Tunda jadwal siram semua tanaman selama 1 hari?")) {
-                    this.data.forEach(p => {
-                        // Tambah 1 hari (86400000 ms) ke lastWater
-                        const current = new Date(p.lastWater).getTime();
-                        p.lastWater = new Date(current + 86400000).toISOString();
-                        
-                        p.logs.push({
-                            date: new Date().toISOString(),
-                            type: 'siram',
-                            action: 'Ditunda 1 Hari (Hujan)'
-                        });
-                    });
-                    this.save();
-                    this.showToast("Jadwal diperbarui otomatis!");
+                // Cari hari berikutnya di minggu ini
+                let nextDay = schedule.find(d => d > currentDay);
+                
+                // Jika tidak ada sisa minggu ini, ambil hari pertama minggu depan
+                if (nextDay === undefined) {
+                    nextDay = schedule[0];
                 }
+
+                let daysUntil = (nextDay + 7 - currentDay) % 7;
+                if (daysUntil === 0) daysUntil = 7; // Jika loop balik ke hari yang sama minggu depan
+
+                const nextDate = new Date(today);
+                nextDate.setDate(today.getDate() + daysUntil);
+                return nextDate;
             },
 
             // --- DASHBOARD ---
@@ -652,20 +671,32 @@
                 
                 const today = new Date().setHours(0,0,0,0);
                 let waterNeeded = 0;
-                let totalHarvest = 0;
+                let fertNeeded = 0;
+                let totalHarvest = 0; // Ubah ke 0 dari previous undefined
                 const typeCounts = {};
 
                 this.data.forEach(p => {
                     typeCounts[p.type] = (typeCounts[p.type] || 0) + 1;
-                    const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
-                    if(today >= nextWater) waterNeeded++;
-                    p.logs.forEach(l => {
-                        if(l.type === 'harvest' && l.amount) totalHarvest += parseFloat(l.amount);
-                    });
+                    
+                    // Logic Jadwal Air
+                    const nextWater = this.getNextDate(p.waterSchedule, p.lastWater);
+                    if (nextWater.getTime() <= today) waterNeeded++;
+
+                    // Logic Jadwal Pupuk
+                    const nextFert = this.getNextDate(p.fertSchedule, p.lastFert);
+                    if (nextFert.getTime() <= today) fertNeeded++;
+
+                    if(p.logs) {
+                        p.logs.forEach(l => {
+                            if(l.type === 'harvest' && l.amount) totalHarvest += parseFloat(l.amount);
+                        });
+                    }
                 });
 
                 document.getElementById('waterCount').innerText = waterNeeded;
-                document.getElementById('harvestCount').innerHTML = `${totalHarvest} <span style="font-size:0.9rem; color:var(--text-muted)">kg</span>`;
+                document.getElementById('fertCount').innerText = fertNeeded;
+                // Tidak ada elemen harvestCount di card atas lagi di HTML baru (diganti Fert), 
+                // tapi logic biarkan saja jika ingin dikembalikan.
 
                 // Chart
                 const ctx = document.getElementById('plantChart').getContext('2d');
@@ -707,14 +738,10 @@
                 let filtered = this.data.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
                 
                 filtered.sort((a, b) => {
-                    const today = new Date().setHours(0,0,0,0);
-                    const nextWaterA = new Date(a.lastWater).setHours(0,0,0,0) + (a.waterFreq * 86400000);
-                    const diffA = (nextWaterA - today);
-                    
-                    const nextWaterB = new Date(b.lastWater).setHours(0,0,0,0) + (b.waterFreq * 86400000);
-                    const diffB = (nextWaterB - today);
+                    const nextA = this.getNextDate(a.waterSchedule, a.lastWater).getTime();
+                    const nextB = this.getNextDate(b.waterSchedule, b.lastWater).getTime();
 
-                    if (sortMode === 'urgency') return diffA - diffB;
+                    if (sortMode === 'urgency') return nextA - nextB;
                     if (sortMode === 'az') return a.name.localeCompare(b.name);
                     if (sortMode === 'newest') return b.id - a.id;
                     return 0;
@@ -732,9 +759,26 @@
 
                 filtered.forEach(p => {
                     const today = new Date().setHours(0,0,0,0);
-                    const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
-                    const diffDays = Math.ceil((nextWater - today) / (86400000));
-                    const isUrgent = diffDays <= 0;
+                    const nextWaterDate = this.getNextDate(p.waterSchedule, p.lastWater);
+                    const diffTime = nextWaterDate.getTime() - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                    
+                    // Logic tampilan status
+                    let statusClass = '';
+                    let statusText = '';
+                    let icon = 'fa-droplet';
+
+                    if (diffDays <= 0) {
+                        statusClass = 'urgent';
+                        statusText = 'Siram Hari Ini!';
+                        icon = 'fa-triangle-exclamation';
+                    } else if (diffDays === 1) {
+                        statusClass = 'today';
+                        statusText = 'Siram Besok';
+                    } else {
+                        statusText = `Siram: ${DAYS_MAP[nextWaterDate.getDay()]}`; 
+                    }
+                    
                     const img = p.image || DEFAULT_IMG;
                     
                     const html = `
@@ -745,9 +789,9 @@
                             <div class="card-body">
                                 <span class="badge" style="background:var(--primary-light); color:var(--primary)">${p.type}</span>
                                 <h3 style="font-size:1.1rem; margin-bottom:5px; color:var(--text-main)">${p.name}</h3>
-                                <div class="status-pill ${isUrgent ? 'urgent' : ''}">
-                                    <i class="fa-solid ${isUrgent ? 'fa-triangle-exclamation' : 'fa-droplet'}"></i>
-                                    ${isUrgent ? 'Siram Sekarang!' : `Siram: ${diffDays} hari lagi`}
+                                <div class="status-pill ${statusClass}">
+                                    <i class="fa-solid ${icon}"></i>
+                                    ${statusText}
                                 </div>
                             </div>
                         </div>
@@ -756,7 +800,36 @@
                 });
             },
 
-            // --- DETAIL, ACTIONS, & EDIT (IMPROVED) ---
+            // --- FORM ACTIONS (DAY SELECTOR) ---
+            toggleDay(el, type) {
+                // Type bisa 'water' atau 'fert'
+                if (type === 'fert') {
+                    el.classList.toggle('fert-active');
+                } else {
+                    el.classList.toggle('active');
+                }
+            },
+
+            getSelectedDays(containerId, activeClass) {
+                const container = document.getElementById(containerId);
+                const actives = container.querySelectorAll(`.${activeClass}`);
+                return Array.from(actives).map(el => parseInt(el.getAttribute('data-day')));
+            },
+
+            setDays(daysArray, containerId, activeClass) {
+                const container = document.getElementById(containerId);
+                // Clear all
+                container.querySelectorAll('.day-check').forEach(el => el.classList.remove(activeClass));
+                // Set active
+                if(daysArray) {
+                    daysArray.forEach(d => {
+                        const el = container.querySelector(`.day-check[data-day="${d}"]`);
+                        if(el) el.classList.add(activeClass);
+                    });
+                }
+            },
+
+            // --- DETAIL & EDIT ---
             openDetail(id) {
                 const p = this.data.find(x => x.id === id);
                 if(!p) return;
@@ -766,26 +839,32 @@
                 document.getElementById('dType').innerText = p.type;
                 document.getElementById('dImage').src = p.image || DEFAULT_IMG;
                 
-                const planted = new Date(p.date);
-                const age = Math.floor((new Date() - planted) / (86400000));
-                document.getElementById('dAge').innerText = `Ditanam: ${p.date} (${age} hari yang lalu)`;
+                // Show Schedule readable
+                const waterNames = p.waterSchedule.sort().map(d => DAYS_MAP[d]).join(', ');
+                document.getElementById('dScheduleInfo').innerText = `Jadwal Siram: ${waterNames}`;
+
+                const fertNames = (p.fertSchedule || []).sort().map(d => DAYS_MAP[d]).join(', ');
+                document.getElementById('dFertInfo').innerText = `Jadwal Pupuk: ${fertNames}`;
 
                 this.renderTimeline(p);
                 this.openModal('detailModal');
             },
 
             openFormModal() {
-                // Reset Form for Add Mode
                 document.getElementById('formTitle').innerText = "Tambah Tanaman";
                 document.getElementById('plantForm').reset();
-                document.getElementById('pId').value = ""; // Clear ID
+                document.getElementById('pId').value = "";
                 this.editingId = null;
                 document.getElementById('imgPreviewBox').style.display = 'none';
+                
+                // Reset Day Selector
+                this.setDays([], 'waterDayContainer', 'active'); 
+                this.setDays([], 'fertDayContainer', 'fert-active'); 
+                
                 this.openModal('formModal');
             },
 
             openEditForm() {
-                // Populate Form for Edit Mode
                 const p = this.data.find(x => x.id === this.currentId);
                 if(!p) return;
 
@@ -795,10 +874,12 @@
                 document.getElementById('pName').value = p.name;
                 document.getElementById('pType').value = p.type;
                 document.getElementById('pDate').value = p.date;
-                document.getElementById('pWaterFreq').value = p.waterFreq;
-                document.getElementById('pFertFreq').value = p.fertFreq;
+                // Fert Freq removed from input, using schedule now
 
-                // Show existing image preview if available
+                // Set Days
+                this.setDays(p.waterSchedule || [], 'waterDayContainer', 'active');
+                this.setDays(p.fertSchedule || [], 'fertDayContainer', 'fert-active');
+
                 if (p.image) {
                     document.getElementById('imgPreviewBox').style.display = 'block';
                     document.getElementById('imgPreviewTag').src = p.image;
@@ -816,14 +897,21 @@
                 const sortedLogs = [...p.logs].sort((a,b) => new Date(b.date) - new Date(a.date));
 
                 sortedLogs.forEach(l => {
-                    const d = new Date(l.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                    // FITUR BARU: JAM & MENIT
+                    const dateObj = new Date(l.date);
+                    const d = dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                    const t = dateObj.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
+                    
                     const icon = l.type === 'siram' ? 'fa-droplet' : l.type === 'pupuk' ? 'fa-flask' : l.type === 'harvest' ? 'fa-basket-shopping' : 'fa-seedling';
-                    const color = l.type === 'harvest' ? '#f97316' : 'var(--primary)';
+                    const color = l.type === 'harvest' ? '#f97316' : l.type === 'pupuk' ? '#f59e0b' : 'var(--primary)';
                     
                     tl.innerHTML += `
                         <div style="display:flex; gap:15px; margin-bottom:15px; align-items:start;">
-                            <div style="min-width:50px; font-size:0.8rem; color:var(--text-muted); padding-top:3px;">${d}</div>
-                            <div style="flex:1;">
+                            <div style="min-width:60px; text-align:right; padding-top:2px;">
+                                <div style="font-size:0.85rem; font-weight:700; color:var(--text-main);">${d}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">${t}</div>
+                            </div>
+                            <div style="flex:1; border-left: 2px solid ${color}; padding-left:12px;">
                                 <div style="font-weight:600; font-size:0.95rem; color:${color}">
                                     <i class="fa-solid ${icon}" style="margin-right:5px;"></i> ${l.action}
                                 </div>
@@ -846,6 +934,9 @@
                 this.save();
                 this.renderTimeline(this.data[idx]);
                 this.showToast(`${actionText} berhasil!`);
+                
+                // Refresh dashboard to update counts
+                this.renderDashboard();
             },
 
             logHarvest() {
@@ -875,7 +966,7 @@
 
             // --- SMART LOGIC ---
             checkPresets(val) {
-                if (this.editingId) return; // Don't suggest presets when editing existing data
+                if (this.editingId) return;
                 const hint = document.getElementById('presetHint');
                 const lower = val.toLowerCase();
                 const matchKey = Object.keys(PLANT_KNOWLEDGE).find(k => lower.includes(k));
@@ -892,8 +983,12 @@
             applyPreset() {
                 if(this.activePreset) {
                     document.getElementById('pType').value = this.activePreset.type;
-                    document.getElementById('pWaterFreq').value = this.activePreset.water;
-                    document.getElementById('pFertFreq').value = this.activePreset.fert;
+                    
+                    // Apply Schedule Days (Water)
+                    this.setDays(this.activePreset.schedule, 'waterDayContainer', 'active');
+                    // Apply Schedule Days (Fert)
+                    this.setDays(this.activePreset.fert, 'fertDayContainer', 'fert-active');
+                    
                     document.getElementById('presetHint').style.display = 'none';
                     this.showToast("Jadwal otomatis terisi!");
                 }
@@ -906,12 +1001,52 @@
                 return DEFAULT_IMG;
             },
 
+            // --- UTILS & OTHERS ---
+            fetchWeather() {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        try {
+                            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&forecast_days=1`);
+                            const data = await res.json();
+                            const temp = Math.round(data.current_weather.temperature);
+                            const code = data.current_weather.weathercode;
+                            
+                            document.getElementById('weatherTemp').innerText = `${temp}°C`;
+                            let desc = "Cerah"; let icon = "fa-sun"; let isRain = false;
+                            if(code >= 1 && code <= 3) { desc = "Berawan"; icon = "fa-cloud"; }
+                            if(code >= 51) { desc = "Hujan"; icon = "fa-cloud-showers-heavy"; isRain = true; }
+                            
+                            document.getElementById('weatherDesc').innerText = `${desc} • Lokasi Terdeteksi`;
+                            document.querySelector('.weather-icon i').className = `fa-solid ${icon}`;
+                            document.getElementById('rainDelayBtn').style.display = isRain ? 'inline-flex' : 'none';
+                        } catch (err) {}
+                    });
+                }
+            },
+
+            applyRainDelay() {
+                if(confirm("Tandai semua jadwal SIRAM hari ini sebagai 'Sudah Disiram' karena hujan?")) {
+                    const today = new Date().setHours(0,0,0,0);
+                    let count = 0;
+                    this.data.forEach(p => {
+                        const nextDate = this.getNextDate(p.waterSchedule, p.lastWater);
+                        if(nextDate.getTime() <= today) {
+                            p.lastWater = new Date().toISOString();
+                            p.logs.push({ date: new Date().toISOString(), type: 'siram', action: 'Dilewati (Hujan)' });
+                            count++;
+                        }
+                    });
+                    this.save();
+                    this.showToast(`${count} tanaman diperbarui.`);
+                }
+            },
+            
             // --- NOTIFICATIONS ---
             requestNotification() {
-                if ("Notification" in window) {
-                    if (Notification.permission !== "denied" && Notification.permission !== "granted") {
-                         Notification.requestPermission();
-                    }
+                if ("Notification" in window && Notification.permission !== "denied" && Notification.permission !== "granted") {
+                     Notification.requestPermission();
                 }
             },
 
@@ -919,13 +1054,13 @@
                 if (Notification.permission !== "granted") return;
                 const today = new Date().setHours(0,0,0,0);
                 const thirstyPlants = this.data.filter(p => {
-                    const nextWater = new Date(p.lastWater).setHours(0,0,0,0) + (p.waterFreq * 86400000);
-                    return today >= nextWater;
+                    const nextDate = this.getNextDate(p.waterSchedule, p.lastWater);
+                    return nextDate.getTime() <= today;
                 });
                 
                 if (thirstyPlants.length > 0) {
                     new Notification("SmartGarden Reminder", {
-                        body: `Ada ${thirstyPlants.length} tanaman yang harus disiram sekarang!`,
+                        body: `Ada ${thirstyPlants.length} tanaman di jadwal siram hari ini!`,
                         icon: "https://cdn-icons-png.flaticon.com/512/628/628283.png"
                     });
                 }
@@ -940,22 +1075,20 @@
                 a.click();
             },
 
-            exportCSV() { // NEW: CSV EXPORT
-                let csv = "Nama Tanaman,Tipe,Tgl Aktivitas,Jenis Aktivitas,Keterangan,Jumlah (Kg)\n";
-                
+            exportCSV() { 
+                let csv = "Nama Tanaman,Tipe,Jadwal Siram,Jadwal Pupuk,Tgl Aktivitas,Jam,Jenis Aktivitas,Keterangan\n";
                 this.data.forEach(p => {
+                    const wSched = p.waterSchedule.map(d => DAYS_MAP[d]).join('/');
+                    const fSched = (p.fertSchedule||[]).map(d => DAYS_MAP[d]).join('/');
                     p.logs.forEach(l => {
-                        const date = new Date(l.date).toLocaleDateString('id-ID');
-                        const amount = l.amount || 0;
-                        csv += `"${p.name}","${p.type}","${date}","${l.type}","${l.action}",${amount}\n`;
+                        const dObj = new Date(l.date);
+                        csv += `"${p.name}","${p.type}","${wSched}","${fSched}","${dObj.toLocaleDateString()}","${dObj.toLocaleTimeString()}","${l.type}","${l.action}"\n`;
                     });
                 });
-
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = `smartgarden_report_${new Date().toISOString().slice(0,10)}.csv`;
+                a.href = URL.createObjectURL(blob);
+                a.download = `smartgarden_report.csv`;
                 a.click();
             },
 
@@ -973,33 +1106,28 @@
                 reader.readAsText(file);
             },
 
-            // --- UTILS ---
+            // --- BASE UTILS ---
             switchTab(id) {
                 document.querySelectorAll('.view-section').forEach(e => e.style.display = 'none');
                 document.getElementById(id).style.display = 'block';
                 document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
-                
                 const navIdx = id === 'dashboard' ? 0 : id === 'garden' ? 1 : 2;
                 document.querySelectorAll('.nav-link')[navIdx].classList.add('active');
             },
-
             openModal(id) { document.getElementById(id).classList.add('active'); },
             closeModal(id) { document.getElementById(id).classList.remove('active'); },
-            
             toggleTheme() {
                 const current = document.documentElement.getAttribute('data-theme');
                 const next = current === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', next);
                 localStorage.setItem('sg_theme', next);
             },
-
             showToast(msg) {
                 const t = document.getElementById('toast');
                 document.getElementById('toastMsg').innerText = msg;
                 t.classList.add('show');
                 setTimeout(() => t.classList.remove('show'), 3000);
             },
-
             async compressImage(file) {
                 return new Promise(resolve => {
                     const reader = new FileReader();
@@ -1021,14 +1149,12 @@
             }
         };
 
-        // --- EVENT LISTENERS ---
-        
-        // Form Image Preview Handler
+        // --- EVENTS ---
         document.getElementById('pImageInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(evt) {
+                reader.onload = evt => {
                     document.getElementById('imgPreviewBox').style.display = 'block';
                     document.getElementById('imgPreviewTag').src = evt.target.result;
                 }
@@ -1036,48 +1162,49 @@
             }
         });
 
-        // Form Submit Handler (CREATE OR UPDATE)
         document.getElementById('plantForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerText = "Menyimpan...";
-            btn.disabled = true;
+            btn.innerText = "Menyimpan..."; btn.disabled = true;
 
             try {
                 const name = document.getElementById('pName').value;
                 const file = document.getElementById('pImageInput').files[0];
                 const editingId = document.getElementById('pId').value;
                 
-                let imgBase64 = null;
-                
-                if(file) {
-                    imgBase64 = await app.compressImage(file);
-                } else if (!editingId) {
-                    // Only auto-fetch image if new entry and no file uploaded
-                    imgBase64 = app.getAutoImage(name);
+                const waterSchedule = app.getSelectedDays('waterDayContainer', 'active');
+                const fertSchedule = app.getSelectedDays('fertDayContainer', 'fert-active');
+
+                if (waterSchedule.length === 0) {
+                    alert("Pilih minimal 1 hari penyiraman!");
+                    btn.innerText = "Simpan"; btn.disabled = false;
+                    return;
                 }
+                // Fert schedule boleh kosong (opsional), tapi sebaiknya diisi
+                
+                let imgBase64 = null;
+                if(file) imgBase64 = await app.compressImage(file);
+                else if (!editingId) imgBase64 = app.getAutoImage(name);
 
                 if (editingId) {
-                    // EDIT MODE
                     const idx = app.data.findIndex(p => p.id == editingId);
                     if (idx > -1) {
                         app.data[idx].name = name;
                         app.data[idx].type = document.getElementById('pType').value;
                         app.data[idx].date = document.getElementById('pDate').value;
-                        app.data[idx].waterFreq = parseInt(document.getElementById('pWaterFreq').value);
-                        app.data[idx].fertFreq = parseInt(document.getElementById('pFertFreq').value);
-                        if(imgBase64) app.data[idx].image = imgBase64; // Update img only if new one provided
+                        app.data[idx].waterSchedule = waterSchedule;
+                        app.data[idx].fertSchedule = fertSchedule; // Update Fert
+                        if(imgBase64) app.data[idx].image = imgBase64;
                     }
                     app.showToast("Data diperbarui!");
                 } else {
-                    // CREATE MODE
                     const newPlant = {
                         id: Date.now(),
                         name: name,
                         type: document.getElementById('pType').value,
                         date: document.getElementById('pDate').value,
-                        waterFreq: parseInt(document.getElementById('pWaterFreq').value),
-                        fertFreq: parseInt(document.getElementById('pFertFreq').value),
+                        waterSchedule: waterSchedule,
+                        fertSchedule: fertSchedule, // Save Fert
                         lastWater: document.getElementById('pDate').value,
                         lastFert: document.getElementById('pDate').value,
                         image: imgBase64,
@@ -1091,17 +1218,14 @@
                 app.closeModal('formModal');
                 e.target.reset();
                 app.switchTab('garden');
-
             } catch (err) {
                 console.error(err);
                 alert("Gagal menyimpan.");
             } finally {
-                btn.innerText = "Simpan";
-                btn.disabled = false;
+                btn.innerText = "Simpan"; btn.disabled = false;
             }
         });
 
-        // Start App
         document.addEventListener('DOMContentLoaded', () => app.init());
 
     </script>
