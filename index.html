@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SmartGarden MADNN v3.1</title>
+    <meta name="theme-color" content="#059669">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/628/628283.png">
+    
+    <title>SmartGarden MADNN + Clinic Pro</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,7 +15,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* --- COPY STYLE DARI VERSI SEBELUMNYA (TIDAK BERUBAH BANYAK) --- */
+        /* --- STYLE ASLI (DIPERTAHANKAN) --- */
         :root {
             --primary: #059669;
             --primary-light: #d1fae5;
@@ -26,6 +30,11 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             --radius-md: 12px;
             --radius-lg: 16px;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --danger-border: #fca5a5;
+            --success: #10b981;
+            --warning: #f59e0b;
         }
 
         [data-theme="dark"] {
@@ -39,6 +48,9 @@
             --border: #334155;
             --shadow-sm: none;
             --shadow-md: none;
+            --danger: #f87171;
+            --danger-bg: #450a0a;
+            --danger-border: #7f1d1d;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -138,7 +150,7 @@
         .btn {
             padding: 0.8rem 1.5rem; border: none; border-radius: var(--radius-md);
             font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-            transition: 0.2s; font-size: 0.9rem;
+            transition: 0.2s; font-size: 0.9rem; justify-content: center;
         }
         .btn-primary { background: var(--primary); color: white; }
         .btn-primary:hover { background: #047857; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
@@ -157,6 +169,9 @@
         }
         .plant-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
         
+        .plant-card.is-sick { border: 2px solid var(--danger); background-color: var(--danger-bg); }
+        .plant-card.is-sick .status-pill { background: white; border-color: var(--danger-border); color: var(--danger); }
+
         .plant-img-wrapper { height: 180px; position: relative; overflow: hidden; background: #e2e8f0; }
         .plant-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .plant-card:hover .plant-img { transform: scale(1.08); }
@@ -175,6 +190,13 @@
         }
         .status-pill.urgent { background: #fef2f2; color: #dc2626; border-color: #fecaca; animation: pulse 2s infinite; }
         .status-pill.today { background: #eff6ff; color: #3b82f6; border-color: #bfdbfe; }
+
+        .health-badge {
+            position: absolute; top: 10px; left: 10px; z-index: 10;
+            padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .health-badge.sick { background: var(--danger); color: white; }
 
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
@@ -196,22 +218,14 @@
             font-size: 0.8rem; color: var(--primary); margin-top: 4px; display: none; align-items: center; gap: 5px; cursor: pointer;
         }
         
-        .day-selector-container {
-            display: flex; gap: 8px; justify-content: space-between; margin-bottom: 8px;
-        }
+        .day-selector-container { display: flex; gap: 8px; justify-content: space-between; margin-bottom: 8px; }
         .day-check {
             flex: 1; height: 40px; border: 1px solid var(--border); border-radius: 8px;
             display: grid; place-items: center; cursor: pointer; font-size: 0.8rem; font-weight: 700;
             color: var(--text-muted); background: var(--bg-body); transition: 0.2s; user-select: none;
         }
-        .day-check.active {
-            background: var(--primary); color: white; border-color: var(--primary);
-        }
-        /* Pembeda warna untuk pupuk saat aktif */
-        .day-check.fert-active {
-            background: #f59e0b; color: white; border-color: #f59e0b;
-        }
-        
+        .day-check.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .day-check.fert-active { background: #f59e0b; color: white; border-color: #f59e0b; }
         .day-check:hover:not(.active):not(.fert-active) { border-color: var(--primary); color: var(--primary); }
 
         .img-preview-container { 
@@ -248,6 +262,12 @@
             display: flex; align-items: center; gap: 10px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* --- NEW STYLES FOR FEATURES --- */
+        .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        @media (max-width: 900px) { .chart-row { grid-template-columns: 1fr; } }
+        .offline-badge { display:none; background:#64748b; color:white; padding:4px 10px; border-radius:20px; font-size:0.75rem; margin-left:10px; }
+        .offline-badge.show { display:inline-block; }
     </style>
 </head>
 <body>
@@ -259,6 +279,9 @@
         </div>
         <div class="nav-link" onclick="app.switchTab('garden')">
             <i class="fa-solid fa-seedling"></i> <span>Kebun Saya</span>
+        </div>
+        <div class="nav-link" onclick="app.switchTab('finance')">
+            <i class="fa-solid fa-wallet"></i> <span>Keuangan</span>
         </div>
         <div class="nav-link" onclick="app.switchTab('settings')">
             <i class="fa-solid fa-sliders"></i> <span>Pengaturan</span>
@@ -275,6 +298,9 @@
                         <button class="theme-toggle" onclick="app.toggleTheme()">
                             <i class="fa-solid fa-moon"></i>
                         </button>
+                        <div id="offlineIndicator" class="offline-badge">
+                            <i class="fa-solid fa-wifi-slash"></i> Offline
+                        </div>
                     </div>
                 </div>
                 <div style="text-align: right;">
@@ -309,28 +335,71 @@
                 </div>
                 <div class="card stat-card">
                     <div class="stat-head">
-                        <span class="stat-label">SIRAM HARI INI</span>
-                        <div class="stat-icon" style="background: #eff6ff; color: #3b82f6;"><i class="fa-solid fa-droplet"></i></div>
+                        <span class="stat-label">TINGKAT KESEHATAN</span>
+                        <div class="stat-icon" style="background: #f0f9ff; color: #0ea5e9;"><i class="fa-solid fa-heart-pulse"></i></div>
                     </div>
-                    <div class="stat-value" id="waterCount">0</div>
+                    <div class="stat-value" id="healthRate">100%</div>
+                    <small style="color:var(--text-muted); font-size:0.75rem;">Tanaman Sehat</small>
                 </div>
                 <div class="card stat-card">
                     <div class="stat-head">
-                        <span class="stat-label">PUPUK HARI INI</span>
-                        <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;"><i class="fa-solid fa-flask"></i></div>
+                        <span class="stat-label">KEBUTUHAN HARI INI</span>
+                        <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;"><i class="fa-solid fa-calendar-day"></i></div>
                     </div>
-                    <div class="stat-value" id="fertCount">0</div>
+                    <div class="stat-value" id="actionCount">0</div>
+                    <small style="color:var(--text-muted); font-size:0.75rem;">Siram + Pupuk</small>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="card">
+                    <h3>Sebaran Ekosistem</h3>
+                    <div style="height: 250px;">
+                        <canvas id="plantChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>Ringkasan Keuangan</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="app.switchTab('finance')"><i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="finance" class="view-section" style="display:none;">
+            <div class="header-row">
+                <div class="header-title">
+                    <h1>Dompet Kebun</h1>
+                    <p>Catat pengeluaran bibit, pupuk, dan pemasukan panen.</p>
+                </div>
+                <button class="btn btn-primary" onclick="app.openFinanceModal()">
+                    <i class="fa-solid fa-plus"></i> Catat Transaksi
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="card">
+                    <span class="stat-label">PEMASUKAN</span>
+                    <h2 style="color:var(--success); margin-top:5px;" id="finIncome">Rp 0</h2>
+                </div>
+                <div class="card">
+                    <span class="stat-label">PENGELUARAN</span>
+                    <h2 style="color:var(--danger); margin-top:5px;" id="finExpense">Rp 0</h2>
+                </div>
+                <div class="card">
+                    <span class="stat-label">PROFIT BERSIH</span>
+                    <h2 style="color:var(--text-main); margin-top:5px;" id="finProfit">Rp 0</h2>
                 </div>
             </div>
 
             <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                    <h3>Sebaran Ekosistem</h3>
-                    <button class="btn btn-secondary btn-sm" onclick="app.switchTab('garden')">Lihat Detail</button>
-                </div>
-                <div style="height: 250px;">
-                    <canvas id="plantChart"></canvas>
-                </div>
+                <h3>Riwayat Transaksi</h3>
+                <div id="financeList" style="margin-top:1rem; max-height:400px; overflow-y:auto;">
+                    </div>
             </div>
         </section>
 
@@ -392,9 +461,9 @@
                 </div>
 
                 <div style="margin-top:20px; border-top: 1px solid var(--border); padding-top:20px;">
-                    <h3 style="margin-bottom: 1rem;">Notifikasi</h3>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size:0.9rem;">
-                        Aktifkan notifikasi browser untuk mendapatkan pengingat penyiraman sesuai hari.
+                    <h3 style="margin-bottom: 1rem;">Notifikasi & PWA</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 1rem; font-size:0.9rem;">
+                        Aktifkan notifikasi browser. Website ini mendukung mode offline (PWA).
                     </p>
                     <button class="btn btn-secondary" onclick="app.requestNotification()">
                         <i class="fa-solid fa-bell"></i> Minta Izin Notifikasi
@@ -504,6 +573,7 @@
 
                 <div style="position:absolute; bottom:20px; left:20px; color:white;">
                     <span id="dType" class="badge" style="background:white; color:var(--primary); margin-bottom:5px;">Tipe</span>
+                    <span id="dHealthStatus" class="badge" style="background:var(--primary); color:white; margin-bottom:5px; margin-left:5px;">Sehat</span>
                     <h2 id="dName" style="margin:0; font-size:1.8rem;">Nama Tanaman</h2>
                     <p id="dScheduleInfo" style="font-size:0.85rem; opacity:0.9; margin-top:4px;">Jadwal Siram: -</p>
                     <p id="dFertInfo" style="font-size:0.85rem; opacity:0.9;">Jadwal Pupuk: -</p>
@@ -511,24 +581,131 @@
             </div>
 
             <div style="padding: 1.5rem;">
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom: 1.5rem;">
-                    <button class="btn btn-primary" onclick="app.handleAction('siram')">
-                        <i class="fa-solid fa-droplet"></i> Siram
+                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom: 1rem;">
+                    <button class="btn btn-primary btn-sm" style="flex-direction:column; padding:0.6rem; font-size:0.75rem;" onclick="app.handleAction('siram')">
+                        <i class="fa-solid fa-droplet" style="font-size:1.2rem;"></i> Siram
                     </button>
-                    <button class="btn btn-secondary" onclick="app.handleAction('pupuk')">
-                        <i class="fa-solid fa-flask"></i> Pupuk
+                    <button class="btn btn-secondary btn-sm" style="flex-direction:column; padding:0.6rem; font-size:0.75rem;" onclick="app.handleAction('pupuk')">
+                        <i class="fa-solid fa-flask" style="font-size:1.2rem;"></i> Pupuk
                     </button>
-                    <button class="btn btn-secondary" style="border-color:#f97316; color:#f97316;" onclick="app.logHarvest()">
-                        <i class="fa-solid fa-basket-shopping"></i> Panen
+                    <button class="btn btn-secondary btn-sm" style="flex-direction:column; padding:0.6rem; font-size:0.75rem; border-color:#f97316; color:#f97316;" onclick="app.logHarvest()">
+                        <i class="fa-solid fa-basket-shopping" style="font-size:1.2rem;"></i> Panen
                     </button>
-                    <button class="btn btn-danger" onclick="app.deletePlant()">
-                        <i class="fa-solid fa-trash"></i> Hapus
+                    <button class="btn btn-secondary btn-sm" style="flex-direction:column; padding:0.6rem; font-size:0.75rem; border-color:var(--danger); color:var(--danger);" onclick="app.openClinicForm()">
+                        <i class="fa-solid fa-suitcase-medical" style="font-size:1.2rem;"></i> Klinik
                     </button>
                 </div>
 
-                <h4 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Riwayat Aktivitas</h4>
-                <div id="dTimeline" style="max-height: 200px; overflow-y: auto;">
+                <div style="background:var(--bg-body); padding:1rem; border-radius:12px; margin-bottom:1.5rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h4 style="margin:0;">Grafik Pertumbuhan</h4>
+                        <button class="btn btn-sm btn-secondary" onclick="app.openGrowthModal()">+ Catat Tinggi</button>
                     </div>
+                    <div style="height: 150px;">
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                </div>
+                
+                <button class="btn btn-danger btn-sm" style="width:100%; margin-bottom:1.5rem;" onclick="app.deletePlant()">
+                    <i class="fa-solid fa-trash"></i> Hapus Permanen
+                </button>
+
+                <h4 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px;">Riwayat Aktivitas</h4>
+                <div id="dTimeline" style="max-height: 200px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="clinicModal">
+        <div class="modal-box">
+            <div style="padding: 2rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 style="margin:0; color: var(--danger);"><i class="fa-solid fa-notes-medical"></i> Klinik Tanaman</h2>
+                    <span style="font-size:0.8rem; background:var(--bg-body); padding:4px 8px; border-radius:8px; color:var(--text-muted);">Diagnosa & Penanganan</span>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Status Kesehatan</label>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <select id="cStatus" class="search-input" onchange="app.checkClinicStatus()">
+                            <option value="healthy">Sehat (Sembuh)</option>
+                            <option value="sick">Sakit / Karantina</option>
+                        </select>
+                        <select id="cSeverity" class="search-input" disabled>
+                            <option value="">- Tingkat -</option>
+                            <option value="Ringan">Ringan</option>
+                            <option value="Sedang">Sedang</option>
+                            <option value="Berat">Berat</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Masalah (Hama/Penyakit)</label>
+                    <input type="text" id="cIssue" class="search-input" list="issueList" placeholder="Ketik atau pilih masalah..." oninput="app.checkClinicSuggestion()">
+                    <datalist id="issueList"></datalist>
+                </div>
+                
+                <div id="cSuggestion" style="display:none; background:var(--primary-light); color:var(--primary-dark); padding:10px; border-radius:8px; margin-bottom:1rem; font-size:0.9rem; border:1px solid var(--primary);">
+                    <i class="fa-solid fa-lightbulb"></i> <b>Saran:</b> <span id="cSuggestionText"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Solusi / Tindakan</label>
+                    <textarea id="cSolution" class="search-input" rows="3" placeholder="Tindakan yang dilakukan..."></textarea>
+                </div>
+
+                <div style="display:flex; gap:10px; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="app.closeModal('clinicModal')">Batal</button>
+                    <button type="button" class="btn btn-danger" style="flex:1;" onclick="app.saveClinicLog()"><i class="fa-solid fa-save"></i> Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="financeModal">
+        <div class="modal-box">
+            <div style="padding: 2rem;">
+                <h2 style="margin-bottom: 1.5rem;">Catat Transaksi</h2>
+                <div class="form-group">
+                    <label class="form-label">Jenis Transaksi</label>
+                    <select id="fType" class="search-input">
+                        <option value="expense">Pengeluaran (Beli Pupuk/Bibit)</option>
+                        <option value="income">Pemasukan (Jual Panen)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nominal (Rp)</label>
+                    <input type="number" id="fAmount" class="search-input" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Keterangan</label>
+                    <input type="text" id="fDesc" class="search-input" placeholder="Cth: Beli NPK, Jual Cabai">
+                </div>
+                <div style="display:flex; gap:10px; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="app.closeModal('financeModal')">Batal</button>
+                    <button type="button" class="btn btn-primary" style="flex:1;" onclick="app.saveFinance()">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="growthModal">
+        <div class="modal-box" style="max-width:400px;">
+            <div style="padding: 2rem;">
+                <h3 style="margin-bottom: 1.5rem;">Catat Pertumbuhan</h3>
+                <div class="form-group">
+                    <label class="form-label">Tinggi Tanaman (cm)</label>
+                    <input type="number" id="gHeight" class="search-input" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tanggal Ukur</label>
+                    <input type="date" id="gDate" class="search-input">
+                </div>
+                <div style="display:flex; gap:10px; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" style="flex:1;" onclick="app.closeModal('growthModal')">Batal</button>
+                    <button type="button" class="btn btn-primary" style="flex:1;" onclick="app.saveGrowth()">Simpan</button>
+                </div>
             </div>
         </div>
     </div>
@@ -540,11 +717,9 @@
 
     <script>
         /**
-         * SMARTGARDEN PRO v3.1 (Update: Jam di Log & Jadwal Pupuk Mingguan)
+         * SMARTGARDEN PRO v4.0 (PWA + Growth + Finance + Stats)
          */
         
-        // Update Knowledge dengan data jadwal (0=Min, 1=Sen, ... 6=Sab)
-        // Fert sekarang menggunakan Array [Hari]
         const PLANT_KNOWLEDGE = {
             'cabai': { type: 'Sayur', schedule: [1,3,5], fert: [1], img: 'https://images.unsplash.com/photo-1588252303782-cb80119abd6d?auto=format&fit=crop&w=600&q=80' },
             'tomat': { type: 'Sayur', schedule: [1,4], fert: [1], img: 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=600&q=80' },
@@ -558,35 +733,46 @@
             'jahe': { type: 'Herbal', schedule: [2,5], fert: [2], img: 'https://images.unsplash.com/photo-1635398656643-27c7d4281788?auto=format&fit=crop&w=600&q=80' }
         };
 
+        const CLINIC_KNOWLEDGE = {
+            'Kutu Putih': 'Semprot air sabun cair + minyak goreng (1 sdt/liter) atau Neem Oil.',
+            'Daun Kuning': 'Cek kelembaban tanah (kurang/lebih air). Beri pupuk Nitrogen jika tanah bagus.',
+            'Busuk Akar': 'Kurangi siram. Bongkar media, potong akar busuk, ganti media baru yang porous.',
+            'Bercak Daun': 'Jamur/Bakteri. Pangkas daun sakit, hindari siram daun, gunakan fungisida.',
+            'Ulat': 'Ambil manual. Semprot pestisida nabati (bawang putih/cabai).',
+            'Layu': 'Jika tanah basah tapi layu = Busuk Akar/Bakteri. Jika kering = Kurang Air.',
+            'Tungau/Mite': 'Daun bintik kuning/perak. Semprot air deras atau akarisida.',
+            'Jamur': 'Lapisan putih/hitam. Kurangi kelembaban, sirkulasi udara diperbaiki, fungisida.'
+        };
+
         const DEFAULT_IMG = 'https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=600&q=80';
         const DAYS_MAP = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
         const app = {
             data: [],
+            finance: [], // New Finance Data Store
             currentId: null,
             editingId: null, 
             chart: null,
+            financeChart: null, // New Chart Instance
+            growthChart: null, // New Chart Instance
             activePreset: null,
 
             init() {
-                // Migration logic:
+                // Load Plants
                 let rawData = JSON.parse(localStorage.getItem('sg_pro_data')) || [];
                 this.data = rawData.map(p => {
-                    // Fix Water Schedule
-                    if (!p.waterSchedule) {
-                        p.waterSchedule = [1, 4]; 
-                        delete p.waterFreq;
-                    }
-                    // Fix Fertilizer Schedule (Dari Freq (int) ke Schedule (array))
-                    if (!p.fertSchedule) {
-                        // Default fallback: Senin saja
-                        p.fertSchedule = [1];
-                        // Jika ada data lama fertFreq, kita biarkan saja sebagai legacy atau hapus
-                    }
+                    if (!p.waterSchedule) { p.waterSchedule = [1, 4]; delete p.waterFreq; }
+                    if (!p.fertSchedule) { p.fertSchedule = [1]; }
+                    if (!p.healthStatus) { p.healthStatus = 'healthy'; }
+                    if (!p.logs) { p.logs = []; }
+                    // New: Initialize growth logs
+                    if (!p.growthLogs) { p.growthLogs = []; }
                     return p;
                 });
 
-                // Theme
+                // Load Finance
+                this.finance = JSON.parse(localStorage.getItem('sg_finance')) || [];
+
                 const theme = localStorage.getItem('sg_theme') || 'light';
                 document.documentElement.setAttribute('data-theme', theme);
                 
@@ -597,6 +783,10 @@
                 this.requestNotification();
                 this.checkReminders();
 
+                // Network Status Listener
+                window.addEventListener('online', () => document.getElementById('offlineIndicator').classList.remove('show'));
+                window.addEventListener('offline', () => document.getElementById('offlineIndicator').classList.add('show'));
+
                 setInterval(() => { this.checkReminders(); }, 3600000); 
             },
 
@@ -606,11 +796,16 @@
                 this.updateStorageInfo();
             },
             
+            saveFinanceData() {
+                localStorage.setItem('sg_finance', JSON.stringify(this.finance));
+                this.renderFinance();
+                this.renderDashboard(); // Re-render dash to update finance chart
+            },
+            
             startClock() {
                 const updateTime = () => {
                     const now = new Date();
                     document.getElementById('clockDisplay').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
-                    
                     const hours = now.getHours();
                     let greet = hours < 11 ? "Selamat Pagi" : hours < 15 ? "Selamat Siang" : hours < 18 ? "Selamat Sore" : "Selamat Malam";
                     document.getElementById('greeting').innerText = `${greet}, MADNN`;
@@ -621,84 +816,64 @@
             },
             
             updateStorageInfo() {
-                const str = JSON.stringify(this.data);
+                const str = JSON.stringify(this.data) + JSON.stringify(this.finance);
                 document.getElementById('storageUsed').innerText = (str.length / 1024).toFixed(2);
             },
 
             updateUI() {
                 this.renderDashboard();
                 this.renderGrid();
+                this.renderFinance();
             },
 
-            // --- LOGIC: NEXT SCHEDULE GENERIC ---
-            // Mencari tanggal berikutnya berdasarkan jadwal hari
             getNextDate(scheduleArr, lastDateStr) {
-                if(!scheduleArr || scheduleArr.length === 0) return new Date(); // Fallback
-
+                if(!scheduleArr || scheduleArr.length === 0) return new Date();
                 const today = new Date();
                 today.setHours(0,0,0,0);
-                const currentDay = today.getDay(); // 0-6
+                const currentDay = today.getDay();
                 const schedule = scheduleArr.sort((a,b) => a-b);
                 
-                // Cek apakah hari ini jadwalnya?
                 if (schedule.includes(currentDay)) {
-                    // Cek apakah sudah dilakukan hari ini
                     const lastAction = new Date(lastDateStr).setHours(0,0,0,0);
-                    if (lastAction < today.getTime()) {
-                        return today; // Harus dilakukan hari ini
-                    }
+                    if (lastAction < today.getTime()) { return today; }
                 }
-
-                // Cari hari berikutnya di minggu ini
                 let nextDay = schedule.find(d => d > currentDay);
-                
-                // Jika tidak ada sisa minggu ini, ambil hari pertama minggu depan
-                if (nextDay === undefined) {
-                    nextDay = schedule[0];
-                }
-
+                if (nextDay === undefined) { nextDay = schedule[0]; }
                 let daysUntil = (nextDay + 7 - currentDay) % 7;
-                if (daysUntil === 0) daysUntil = 7; // Jika loop balik ke hari yang sama minggu depan
-
+                if (daysUntil === 0) daysUntil = 7;
                 const nextDate = new Date(today);
                 nextDate.setDate(today.getDate() + daysUntil);
                 return nextDate;
             },
 
-            // --- DASHBOARD ---
             renderDashboard() {
                 document.getElementById('totalCount').innerText = this.data.length;
-                
                 const today = new Date().setHours(0,0,0,0);
                 let waterNeeded = 0;
                 let fertNeeded = 0;
-                let totalHarvest = 0; // Ubah ke 0 dari previous undefined
+                let healthyCount = 0;
                 const typeCounts = {};
 
                 this.data.forEach(p => {
                     typeCounts[p.type] = (typeCounts[p.type] || 0) + 1;
-                    
-                    // Logic Jadwal Air
                     const nextWater = this.getNextDate(p.waterSchedule, p.lastWater);
                     if (nextWater.getTime() <= today) waterNeeded++;
-
-                    // Logic Jadwal Pupuk
                     const nextFert = this.getNextDate(p.fertSchedule, p.lastFert);
                     if (nextFert.getTime() <= today) fertNeeded++;
-
-                    if(p.logs) {
-                        p.logs.forEach(l => {
-                            if(l.type === 'harvest' && l.amount) totalHarvest += parseFloat(l.amount);
-                        });
-                    }
+                    
+                    if (p.healthStatus === 'healthy') healthyCount++;
                 });
 
                 document.getElementById('waterCount').innerText = waterNeeded;
-                document.getElementById('fertCount').innerText = fertNeeded;
-                // Tidak ada elemen harvestCount di card atas lagi di HTML baru (diganti Fert), 
-                // tapi logic biarkan saja jika ingin dikembalikan.
+                // document.getElementById('fertCount').innerText = fertNeeded; 
+                // Changed fertCount to Action Count total
+                document.getElementById('actionCount').innerText = waterNeeded + fertNeeded;
+                
+                // NEW: Calculate Health Rate
+                const rate = this.data.length > 0 ? Math.round((healthyCount / this.data.length) * 100) : 100;
+                document.getElementById('healthRate').innerText = `${rate}%`;
 
-                // Chart
+                // Render Ecosystem Chart
                 const ctx = document.getElementById('plantChart').getContext('2d');
                 if(this.chart) this.chart.destroy();
                 
@@ -721,14 +896,95 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         cutout: '75%',
-                        plugins: {
-                            legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } }
-                        }
+                        plugins: { legend: { position: 'right', labels: { boxWidth: 12, usePointStyle: true } } }
+                    }
+                });
+
+                // NEW: Render Finance Chart (Bar)
+                const ctxFin = document.getElementById('financeChart').getContext('2d');
+                if(this.financeChart) this.financeChart.destroy();
+
+                let totalIncome = this.finance.filter(f => f.type === 'income').reduce((acc, curr) => acc + curr.amount, 0);
+                let totalExpense = this.finance.filter(f => f.type === 'expense').reduce((acc, curr) => acc + curr.amount, 0);
+
+                this.financeChart = new Chart(ctxFin, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Pemasukan', 'Pengeluaran'],
+                        datasets: [{
+                            label: 'Rupiah',
+                            data: [totalIncome, totalExpense],
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
                     }
                 });
             },
 
-            // --- GRID & SORT ---
+            // --- FINANCE FUNCTIONS ---
+            renderFinance() {
+                const list = document.getElementById('financeList');
+                list.innerHTML = '';
+                let income = 0, expense = 0;
+                
+                // Sort by new
+                const sorted = [...this.finance].sort((a,b) => new Date(b.date) - new Date(a.date));
+
+                sorted.forEach(f => {
+                    const isInc = f.type === 'income';
+                    if(isInc) income += f.amount; else expense += f.amount;
+                    
+                    list.innerHTML += `
+                        <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border);">
+                            <div>
+                                <div style="font-weight:600;">${f.desc}</div>
+                                <div style="font-size:0.75rem; color:var(--text-muted);">${new Date(f.date).toLocaleDateString()}</div>
+                            </div>
+                            <div style="font-weight:700; color:${isInc ? 'var(--success)' : 'var(--danger)'}">
+                                ${isInc ? '+' : '-'} Rp ${f.amount.toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('finIncome').innerText = `Rp ${income.toLocaleString()}`;
+                document.getElementById('finExpense').innerText = `Rp ${expense.toLocaleString()}`;
+                const profit = income - expense;
+                document.getElementById('finProfit').innerText = `Rp ${profit.toLocaleString()}`;
+                document.getElementById('finProfit').style.color = profit >= 0 ? 'var(--success)' : 'var(--danger)';
+            },
+
+            openFinanceModal() {
+                document.getElementById('fAmount').value = '';
+                document.getElementById('fDesc').value = '';
+                this.openModal('financeModal');
+            },
+
+            saveFinance() {
+                const type = document.getElementById('fType').value;
+                const amount = parseFloat(document.getElementById('fAmount').value);
+                const desc = document.getElementById('fDesc').value;
+
+                if(!amount || !desc) { alert("Isi data lengkap!"); return; }
+
+                this.finance.push({
+                    id: Date.now(),
+                    date: new Date().toISOString(),
+                    type, amount, desc
+                });
+
+                this.saveFinanceData();
+                this.closeModal('financeModal');
+                this.showToast("Transaksi disimpan!");
+            },
+
+            // --- GRID & PLANT LOGIC ---
             renderGrid() {
                 const container = document.getElementById('plantGrid');
                 const filter = document.getElementById('plantSearch').value || '';
@@ -740,7 +996,6 @@
                 filtered.sort((a, b) => {
                     const nextA = this.getNextDate(a.waterSchedule, a.lastWater).getTime();
                     const nextB = this.getNextDate(b.waterSchedule, b.lastWater).getTime();
-
                     if (sortMode === 'urgency') return nextA - nextB;
                     if (sortMode === 'az') return a.name.localeCompare(b.name);
                     if (sortMode === 'newest') return b.id - a.id;
@@ -748,12 +1003,7 @@
                 });
 
                 if (filtered.length === 0) {
-                    container.innerHTML = `
-                        <div style="grid-column:1/-1; text-align:center; padding:3rem; opacity:0.5;">
-                            <i class="fa-solid fa-leaf" style="font-size:3rem; margin-bottom:1rem;"></i>
-                            <p>Data tidak ditemukan.</p>
-                        </div>
-                    `;
+                    container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:3rem; opacity:0.5;"><p>Data tidak ditemukan.</p></div>`;
                     return;
                 }
 
@@ -763,18 +1013,17 @@
                     const diffTime = nextWaterDate.getTime() - today;
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                     
-                    // Logic tampilan status
                     let statusClass = '';
                     let statusText = '';
                     let icon = 'fa-droplet';
+                    const isSick = p.healthStatus === 'sick';
+                    const cardClass = isSick ? 'plant-card is-sick' : 'plant-card';
+                    const sickBadge = isSick ? `<span class="health-badge sick"><i class="fa-solid fa-virus"></i> SAKIT</span>` : '';
 
                     if (diffDays <= 0) {
-                        statusClass = 'urgent';
-                        statusText = 'Siram Hari Ini!';
-                        icon = 'fa-triangle-exclamation';
+                        statusClass = 'urgent'; statusText = 'Siram Hari Ini!'; icon = 'fa-triangle-exclamation';
                     } else if (diffDays === 1) {
-                        statusClass = 'today';
-                        statusText = 'Siram Besok';
+                        statusClass = 'today'; statusText = 'Siram Besok';
                     } else {
                         statusText = `Siram: ${DAYS_MAP[nextWaterDate.getDay()]}`; 
                     }
@@ -782,7 +1031,8 @@
                     const img = p.image || DEFAULT_IMG;
                     
                     const html = `
-                        <div class="plant-card" onclick="app.openDetail(${p.id})">
+                        <div class="${cardClass}" onclick="app.openDetail(${p.id})">
+                            ${sickBadge}
                             <div class="plant-img-wrapper">
                                 <img src="${img}" class="plant-img" loading="lazy">
                             </div>
@@ -800,14 +1050,9 @@
                 });
             },
 
-            // --- FORM ACTIONS (DAY SELECTOR) ---
             toggleDay(el, type) {
-                // Type bisa 'water' atau 'fert'
-                if (type === 'fert') {
-                    el.classList.toggle('fert-active');
-                } else {
-                    el.classList.toggle('active');
-                }
+                if (type === 'fert') { el.classList.toggle('fert-active'); } 
+                else { el.classList.toggle('active'); }
             },
 
             getSelectedDays(containerId, activeClass) {
@@ -818,9 +1063,7 @@
 
             setDays(daysArray, containerId, activeClass) {
                 const container = document.getElementById(containerId);
-                // Clear all
                 container.querySelectorAll('.day-check').forEach(el => el.classList.remove(activeClass));
-                // Set active
                 if(daysArray) {
                     daysArray.forEach(d => {
                         const el = container.querySelector(`.day-check[data-day="${d}"]`);
@@ -829,7 +1072,6 @@
                 }
             },
 
-            // --- DETAIL & EDIT ---
             openDetail(id) {
                 const p = this.data.find(x => x.id === id);
                 if(!p) return;
@@ -839,44 +1081,104 @@
                 document.getElementById('dType').innerText = p.type;
                 document.getElementById('dImage').src = p.image || DEFAULT_IMG;
                 
-                // Show Schedule readable
+                const healthBadge = document.getElementById('dHealthStatus');
+                if(p.healthStatus === 'sick') {
+                    healthBadge.innerText = "SAKIT / KARANTINA";
+                    healthBadge.style.background = "var(--danger)";
+                } else {
+                    healthBadge.innerText = "SEHAT";
+                    healthBadge.style.background = "var(--primary)";
+                }
+
                 const waterNames = p.waterSchedule.sort().map(d => DAYS_MAP[d]).join(', ');
                 document.getElementById('dScheduleInfo').innerText = `Jadwal Siram: ${waterNames}`;
-
                 const fertNames = (p.fertSchedule || []).sort().map(d => DAYS_MAP[d]).join(', ');
                 document.getElementById('dFertInfo').innerText = `Jadwal Pupuk: ${fertNames}`;
 
                 this.renderTimeline(p);
+                this.renderGrowthChart(p); // NEW: Render Growth Chart
                 this.openModal('detailModal');
             },
 
+            // --- GROWTH FUNCTIONS (NEW) ---
+            openGrowthModal() {
+                document.getElementById('gHeight').value = '';
+                document.getElementById('gDate').value = new Date().toISOString().split('T')[0];
+                this.openModal('growthModal');
+            },
+
+            saveGrowth() {
+                const h = parseFloat(document.getElementById('gHeight').value);
+                const d = document.getElementById('gDate').value;
+                if(!h || !d) { alert("Isi data tinggi dan tanggal!"); return; }
+
+                const idx = this.data.findIndex(p => p.id === this.currentId);
+                if(idx > -1) {
+                    if(!this.data[idx].growthLogs) this.data[idx].growthLogs = [];
+                    this.data[idx].growthLogs.push({ date: d, height: h });
+                    this.data[idx].growthLogs.sort((a,b) => new Date(a.date) - new Date(b.date));
+                    
+                    this.save();
+                    this.renderGrowthChart(this.data[idx]);
+                    this.closeModal('growthModal');
+                    this.showToast("Data pertumbuhan dicatat!");
+                }
+            },
+
+            renderGrowthChart(p) {
+                const ctx = document.getElementById('growthChart').getContext('2d');
+                if(this.growthChart) this.growthChart.destroy();
+
+                const logs = p.growthLogs || [];
+                const labels = logs.map(l => {
+                    const d = new Date(l.date);
+                    return `${d.getDate()}/${d.getMonth()+1}`;
+                });
+                const data = logs.map(l => l.height);
+
+                this.growthChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Tinggi (cm)',
+                            data: data,
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            },
+
+            // --- STANDARD FORM LOGIC ---
             openFormModal() {
                 document.getElementById('formTitle').innerText = "Tambah Tanaman";
                 document.getElementById('plantForm').reset();
                 document.getElementById('pId').value = "";
                 this.editingId = null;
                 document.getElementById('imgPreviewBox').style.display = 'none';
-                
-                // Reset Day Selector
                 this.setDays([], 'waterDayContainer', 'active'); 
                 this.setDays([], 'fertDayContainer', 'fert-active'); 
-                
                 this.openModal('formModal');
             },
 
             openEditForm() {
                 const p = this.data.find(x => x.id === this.currentId);
                 if(!p) return;
-
                 this.editingId = p.id;
                 document.getElementById('formTitle').innerText = "Edit Tanaman";
                 document.getElementById('pId').value = p.id;
                 document.getElementById('pName').value = p.name;
                 document.getElementById('pType').value = p.type;
                 document.getElementById('pDate').value = p.date;
-                // Fert Freq removed from input, using schedule now
-
-                // Set Days
                 this.setDays(p.waterSchedule || [], 'waterDayContainer', 'active');
                 this.setDays(p.fertSchedule || [], 'fertDayContainer', 'fert-active');
 
@@ -886,7 +1188,6 @@
                 } else {
                     document.getElementById('imgPreviewBox').style.display = 'none';
                 }
-
                 this.closeModal('detailModal');
                 this.openModal('formModal');
             },
@@ -897,13 +1198,17 @@
                 const sortedLogs = [...p.logs].sort((a,b) => new Date(b.date) - new Date(a.date));
 
                 sortedLogs.forEach(l => {
-                    // FITUR BARU: JAM & MENIT
                     const dateObj = new Date(l.date);
                     const d = dateObj.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
                     const t = dateObj.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
                     
-                    const icon = l.type === 'siram' ? 'fa-droplet' : l.type === 'pupuk' ? 'fa-flask' : l.type === 'harvest' ? 'fa-basket-shopping' : 'fa-seedling';
-                    const color = l.type === 'harvest' ? '#f97316' : l.type === 'pupuk' ? '#f59e0b' : 'var(--primary)';
+                    let icon = 'fa-seedling';
+                    let color = 'var(--primary)';
+                    
+                    if(l.type === 'siram') { icon = 'fa-droplet'; color = '#3b82f6'; }
+                    else if(l.type === 'pupuk') { icon = 'fa-flask'; color = '#f59e0b'; }
+                    else if(l.type === 'harvest') { icon = 'fa-basket-shopping'; color = '#f97316'; }
+                    else if(l.type === 'clinic') { icon = 'fa-suitcase-medical'; color = '#ef4444'; }
                     
                     tl.innerHTML += `
                         <div style="display:flex; gap:15px; margin-bottom:15px; align-items:start;">
@@ -915,6 +1220,7 @@
                                 <div style="font-weight:600; font-size:0.95rem; color:${color}">
                                     <i class="fa-solid ${icon}" style="margin-right:5px;"></i> ${l.action}
                                 </div>
+                                ${l.desc ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">${l.desc}</div>` : ''}
                             </div>
                         </div>
                     `;
@@ -934,8 +1240,6 @@
                 this.save();
                 this.renderTimeline(this.data[idx]);
                 this.showToast(`${actionText} berhasil!`);
-                
-                // Refresh dashboard to update counts
                 this.renderDashboard();
             },
 
@@ -949,10 +1253,115 @@
                         action: `Panen ${amount}kg`,
                         amount: parseFloat(amount)
                     });
+                    
+                    // Trigger finance suggestion
+                    if(confirm("Mau catat ini sebagai pemasukan di Dompet Kebun?")) {
+                        document.getElementById('fType').value = 'income';
+                        document.getElementById('fDesc').value = `Jual Panen ${this.data[idx].name} (${amount}kg)`;
+                        this.openModal('financeModal');
+                    }
+
                     this.save();
                     this.renderTimeline(this.data[idx]);
                     this.showToast("Panen tercatat!");
                 }
+            },
+
+            openClinicForm() {
+                const p = this.data.find(x => x.id === this.currentId);
+                if(!p) return;
+                document.getElementById('cStatus').value = p.healthStatus || 'healthy';
+                document.getElementById('cIssue').value = '';
+                document.getElementById('cSolution').value = '';
+                document.getElementById('cSeverity').value = '';
+                document.getElementById('cSuggestion').style.display = 'none';
+                
+                const dl = document.getElementById('issueList');
+                if(dl) dl.innerHTML = Object.keys(CLINIC_KNOWLEDGE).map(k => `<option value="${k}">`).join('');
+                
+                this.checkClinicStatus();
+                this.openModal('clinicModal');
+            },
+
+            checkClinicStatus() {
+                const status = document.getElementById('cStatus').value;
+                const sev = document.getElementById('cSeverity');
+                if(status === 'sick') {
+                    sev.disabled = false;
+                } else {
+                    sev.disabled = true;
+                    sev.value = '';
+                }
+            },
+
+            checkClinicSuggestion() {
+                const val = document.getElementById('cIssue').value;
+                const box = document.getElementById('cSuggestion');
+                const txt = document.getElementById('cSuggestionText');
+                const key = Object.keys(CLINIC_KNOWLEDGE).find(k => k.toLowerCase() === val.toLowerCase());
+                
+                if(key) {
+                    txt.innerText = CLINIC_KNOWLEDGE[key];
+                    box.style.display = 'block';
+                } else {
+                    box.style.display = 'none';
+                }
+            },
+
+            saveClinicLog() {
+                const status = document.getElementById('cStatus').value;
+                const issue = document.getElementById('cIssue').value;
+                const solution = document.getElementById('cSolution').value;
+                const severity = document.getElementById('cSeverity').value;
+                
+                if(!issue && status === 'sick') {
+                    alert("Mohon isi masalah/penyakitnya."); return;
+                }
+
+                const idx = this.data.findIndex(p => p.id === this.currentId);
+                const prevStatus = this.data[idx].healthStatus;
+                this.data[idx].healthStatus = status;
+
+                let actionText = "Laporan Klinik";
+                let descText = "";
+
+                if(status === 'sick') {
+                    const sevText = severity ? `[${severity}]` : '';
+                    actionText = `Sakit: ${issue} ${sevText}`;
+                    descText = `Solusi: ${solution || '-'}`;
+                } else if(prevStatus === 'sick' && status === 'healthy') {
+                    actionText = "Tanaman Sembuh";
+                    descText = `Catatan: ${solution || 'Kondisi membaik'}`;
+                } else {
+                    actionText = `Cek Kesehatan: ${issue || 'Rutin'}`;
+                    descText = `Tindakan: ${solution || '-'}`;
+                }
+
+                this.data[idx].logs.push({
+                    date: new Date().toISOString(),
+                    type: 'clinic',
+                    action: actionText,
+                    desc: descText
+                });
+
+                this.save();
+                this.closeModal('clinicModal');
+                
+                const healthBadge = document.getElementById('dHealthStatus');
+                if(healthBadge) {
+                    if(status === 'sick') {
+                        healthBadge.innerText = "SAKIT / KARANTINA";
+                        healthBadge.style.background = "var(--danger)";
+                    } else {
+                        healthBadge.innerText = "SEHAT";
+                        healthBadge.style.background = "var(--primary)";
+                    }
+                }
+
+                this.renderTimeline(this.data[idx]);
+                this.renderDashboard(); 
+                this.renderGrid();
+                this.showToast("Data klinik disimpan!");
             },
 
             deletePlant() {
@@ -964,7 +1373,6 @@
                 }
             },
 
-            // --- SMART LOGIC ---
             checkPresets(val) {
                 if (this.editingId) return;
                 const hint = document.getElementById('presetHint');
@@ -983,12 +1391,8 @@
             applyPreset() {
                 if(this.activePreset) {
                     document.getElementById('pType').value = this.activePreset.type;
-                    
-                    // Apply Schedule Days (Water)
                     this.setDays(this.activePreset.schedule, 'waterDayContainer', 'active');
-                    // Apply Schedule Days (Fert)
                     this.setDays(this.activePreset.fert, 'fertDayContainer', 'fert-active');
-                    
                     document.getElementById('presetHint').style.display = 'none';
                     this.showToast("Jadwal otomatis terisi!");
                 }
@@ -1001,7 +1405,6 @@
                 return DEFAULT_IMG;
             },
 
-            // --- UTILS & OTHERS ---
             fetchWeather() {
                 if ("geolocation" in navigator) {
                     navigator.geolocation.getCurrentPosition(async (position) => {
@@ -1012,12 +1415,10 @@
                             const data = await res.json();
                             const temp = Math.round(data.current_weather.temperature);
                             const code = data.current_weather.weathercode;
-                            
                             document.getElementById('weatherTemp').innerText = `${temp}°C`;
                             let desc = "Cerah"; let icon = "fa-sun"; let isRain = false;
                             if(code >= 1 && code <= 3) { desc = "Berawan"; icon = "fa-cloud"; }
                             if(code >= 51) { desc = "Hujan"; icon = "fa-cloud-showers-heavy"; isRain = true; }
-                            
                             document.getElementById('weatherDesc').innerText = `${desc} • Lokasi Terdeteksi`;
                             document.querySelector('.weather-icon i').className = `fa-solid ${icon}`;
                             document.getElementById('rainDelayBtn').style.display = isRain ? 'inline-flex' : 'none';
@@ -1043,7 +1444,6 @@
                 }
             },
             
-            // --- NOTIFICATIONS ---
             requestNotification() {
                 if ("Notification" in window && Notification.permission !== "denied" && Notification.permission !== "granted") {
                      Notification.requestPermission();
@@ -1057,7 +1457,6 @@
                     const nextDate = this.getNextDate(p.waterSchedule, p.lastWater);
                     return nextDate.getTime() <= today;
                 });
-                
                 if (thirstyPlants.length > 0) {
                     new Notification("SmartGarden Reminder", {
                         body: `Ada ${thirstyPlants.length} tanaman di jadwal siram hari ini!`,
@@ -1066,7 +1465,6 @@
                 }
             },
 
-            // --- EXPORT / IMPORT ---
             exportData() {
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.data));
                 const a = document.createElement('a');
@@ -1076,13 +1474,16 @@
             },
 
             exportCSV() { 
-                let csv = "Nama Tanaman,Tipe,Jadwal Siram,Jadwal Pupuk,Tgl Aktivitas,Jam,Jenis Aktivitas,Keterangan\n";
+                let csv = "Nama Tanaman,Tipe,Jadwal Siram,Jadwal Pupuk,Kesehatan,Tgl Aktivitas,Jam,Jenis Aktivitas,Keterangan\n";
                 this.data.forEach(p => {
                     const wSched = p.waterSchedule.map(d => DAYS_MAP[d]).join('/');
                     const fSched = (p.fertSchedule||[]).map(d => DAYS_MAP[d]).join('/');
+                    const hStat = p.healthStatus === 'sick' ? 'Sakit' : 'Sehat';
                     p.logs.forEach(l => {
                         const dObj = new Date(l.date);
-                        csv += `"${p.name}","${p.type}","${wSched}","${fSched}","${dObj.toLocaleDateString()}","${dObj.toLocaleTimeString()}","${l.type}","${l.action}"\n`;
+                        const action = (l.action || "").replace(/"/g, '""');
+                        const desc = (l.desc || "").replace(/"/g, '""');
+                        csv += `"${p.name}","${p.type}","${wSched}","${fSched}","${hStat}","${dObj.toLocaleDateString()}","${dObj.toLocaleTimeString()}","${l.type}","${action} ${desc}"\n`;
                     });
                 });
                 const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1106,13 +1507,17 @@
                 reader.readAsText(file);
             },
 
-            // --- BASE UTILS ---
             switchTab(id) {
                 document.querySelectorAll('.view-section').forEach(e => e.style.display = 'none');
                 document.getElementById(id).style.display = 'block';
                 document.querySelectorAll('.nav-link').forEach(e => e.classList.remove('active'));
-                const navIdx = id === 'dashboard' ? 0 : id === 'garden' ? 1 : 2;
-                document.querySelectorAll('.nav-link')[navIdx].classList.add('active');
+                
+                // Dirty navigation highlight logic
+                const navLinks = document.querySelectorAll('.nav-link');
+                if(id === 'dashboard') navLinks[0].classList.add('active');
+                if(id === 'garden') navLinks[1].classList.add('active');
+                if(id === 'finance') navLinks[2].classList.add('active');
+                if(id === 'settings') navLinks[3].classList.add('active');
             },
             openModal(id) { document.getElementById(id).classList.add('active'); },
             closeModal(id) { document.getElementById(id).classList.remove('active'); },
@@ -1171,7 +1576,6 @@
                 const name = document.getElementById('pName').value;
                 const file = document.getElementById('pImageInput').files[0];
                 const editingId = document.getElementById('pId').value;
-                
                 const waterSchedule = app.getSelectedDays('waterDayContainer', 'active');
                 const fertSchedule = app.getSelectedDays('fertDayContainer', 'fert-active');
 
@@ -1180,7 +1584,6 @@
                     btn.innerText = "Simpan"; btn.disabled = false;
                     return;
                 }
-                // Fert schedule boleh kosong (opsional), tapi sebaiknya diisi
                 
                 let imgBase64 = null;
                 if(file) imgBase64 = await app.compressImage(file);
@@ -1193,7 +1596,7 @@
                         app.data[idx].type = document.getElementById('pType').value;
                         app.data[idx].date = document.getElementById('pDate').value;
                         app.data[idx].waterSchedule = waterSchedule;
-                        app.data[idx].fertSchedule = fertSchedule; // Update Fert
+                        app.data[idx].fertSchedule = fertSchedule;
                         if(imgBase64) app.data[idx].image = imgBase64;
                     }
                     app.showToast("Data diperbarui!");
@@ -1204,11 +1607,13 @@
                         type: document.getElementById('pType').value,
                         date: document.getElementById('pDate').value,
                         waterSchedule: waterSchedule,
-                        fertSchedule: fertSchedule, // Save Fert
+                        fertSchedule: fertSchedule,
+                        healthStatus: 'healthy',
                         lastWater: document.getElementById('pDate').value,
                         lastFert: document.getElementById('pDate').value,
                         image: imgBase64,
-                        logs: [{ date: new Date().toISOString(), type: 'init', action: 'Ditanam' }]
+                        logs: [{ date: new Date().toISOString(), type: 'init', action: 'Ditanam' }],
+                        growthLogs: []
                     };
                     app.data.unshift(newPlant);
                     app.showToast("Tanaman ditambahkan!");
@@ -1226,8 +1631,16 @@
             }
         });
 
-        document.addEventListener('DOMContentLoaded', () => app.init());
+        // --- PWA SERVICE WORKER REGISTRATION ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker Registered'))
+                    .catch(err => console.log('SW Fail:', err));
+            });
+        }
 
+        document.addEventListener('DOMContentLoaded', () => app.init());
     </script>
 </body>
 </html>
